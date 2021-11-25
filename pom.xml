@@ -3,14 +3,16 @@
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
-
-    <groupId>groupId</groupId>
+    
+    <groupId>com.github.cafapi</groupId>
     <artifactId>util-flyway-installer</artifactId>
     <version>1.0-SNAPSHOT</version>
     <inceptionYear>2021</inceptionYear>
     <properties>
         <copyrightYear>2021</copyrightYear>
-        <enforceCorrectDependencies>true</enforceCorrectDependencies>
+        <skipLicenseHeadersCheck>false</skipLicenseHeadersCheck>
+        <enforceCorrectDependencies>false</enforceCorrectDependencies>
+        <enforceBannedDependencies>false</enforceBannedDependencies>
         <springVersion>5.0.18.RELEASE</springVersion>
         <maven.compiler.source>1.8</maven.compiler.source>
         <maven.compiler.target>1.8</maven.compiler.target>
