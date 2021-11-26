@@ -39,7 +39,7 @@ public final class Application implements Callable<Integer>
     @CommandLine.Option(
             names = {"-db.connection.url"},
             paramLabel = "<fullConnectionString>",
-            required = false,
+            defaultValue = "",
             description = "Specifies the full connection string to the database service. e.g. postgresql://localhost:3307/storageservice?characterEncoding=UTF8&rewriteBatchedStatements=true"
     )
     private String fullConnectionString;
@@ -47,7 +47,7 @@ public final class Application implements Callable<Integer>
     @CommandLine.Option(
             names = {"-db.connection"},
             paramLabel = "<connectionString>",
-            required = false,
+            defaultValue = "",
             description = "Specifies the connection string to the database service. " +
                     "e.g. postgresql://localhost:3307/"
     )
@@ -72,7 +72,7 @@ public final class Application implements Callable<Integer>
     @CommandLine.Option(
             names = {"-db.name"},
             paramLabel = "<dbName>",
-            required = false,
+            defaultValue = "",
             description = "Specifies the name of the database to be created or updated."
     )
     private String dbName;
