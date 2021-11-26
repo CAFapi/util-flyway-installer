@@ -87,14 +87,17 @@ public final class Migrater
         if(fullConnectionString.isEmpty() && (connectionString.isEmpty() || dbName.isEmpty())){
             throw new RuntimeException("We should have either fullConnectionString or (connectionString and dbName)");
         }
+        final String databaseUrl;
         if(!fullConnectionString.isEmpty()){
             if(fullConnectionString.contains("?")){
-                return fullConnectionString.substring(0, fullConnectionString.lastIndexOf('?')+1);
+                databaseUrl = fullConnectionString.substring(0, fullConnectionString.lastIndexOf('?')+1);
+            }else {
+                databaseUrl = fullConnectionString.replace("\\", "/");
             }
-            return fullConnectionString;
         } else {
-            return connectionString +"/"+ dbName;
+            databaseUrl = connectionString +"/"+ dbName;
         }
+        return databaseUrl.replace("\\", "/");
     }
     
     private static boolean checkDBExists(final String connectionUrl, final String username,
