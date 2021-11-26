@@ -40,6 +40,7 @@ public final class Migrater
                                final String dbName ) throws SQLException
     {
         final String connectionUrl = defineConnectionUrl(fullConnectionString, connectionString, dbName);
+        LOGGER.info("connectionUrl {}", connectionUrl);
         boolean dbExists = checkDBExists(connectionUrl, username, password);
         
         if (dbExists && allowDBDeletion) {
@@ -85,13 +86,11 @@ public final class Migrater
         if(fullConnectionString.isEmpty() && (connectionString.isEmpty() || dbName.isEmpty())){
             throw new RuntimeException("We should have either fullConnectionString or (connectionString and dbName)");
         }
-        final String connectionUrl;
         if(!fullConnectionString.isEmpty()){
-            connectionUrl = fullConnectionString.substring(0, fullConnectionString.lastIndexOf('?')+1);
+            return fullConnectionString.substring(0, fullConnectionString.lastIndexOf('?')+1);
         } else {
-            connectionUrl = connectionString +"/"+ dbName;
+            return connectionString +"/"+ dbName;
         }
-        return connectionUrl;
     }
     
     private static boolean checkDBExists(final String connectionUrl, final String username,
