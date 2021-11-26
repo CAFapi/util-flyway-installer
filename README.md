@@ -1,23 +1,23 @@
 # Flyway Database Installer
 
-The Liquibase Database Installer is a generic  java application that will create and update databases using the supplied Liquibase change log.
+The Flyway Database Installer is a generic  java application that will create and update databases using the supplied Flyway change log.
 
 ## Consuming the Installer
 To make use of the installer use the following steps:
 
 1. Create a new Java project.
-2. Add com.hpe.caf.util-liquibase-installer as a dependency.
-3. Create a Liquibase change log called changelog.xml and place this in the resources folder of the project.
+2. Add com.github.cafapi.util-Flyway-installer as a dependency.
+3. Create a Flyway change log called changelog.xml and place this in the `resources` folder of the project.
 4. Build the project with the mainClass as:
 
-   `com.hpe.caf.utilliquibaseinstaller.Application`
+   `com.hpe.caf.utilFlywayinstaller.Application`
 
 This will produce a .jar specific to your project.
 
 Note: The installer comes prepackaged only with Postgresql and h2 drivers. If you need to use another database driver you must add it as a dependency to your own project.
 
 ## Example POM
-Below is an example project's POM showing how to build using the Liquibase installer.
+Below is an example project's POM showing how to build using the Flyway installer.
 <groupId>com.hpe.caf</groupId>
 <artifactId>boilerplate-db</artifactId>
 <version>1.0-SNAPSHOT</version>
@@ -25,7 +25,7 @@ Below is an example project's POM showing how to build using the Liquibase insta
     <dependencies>
         <dependency>
             <groupId>com.hpe.caf.util</groupId>
-            <artifactId>util-liquibase-installer</artifactId>
+            <artifactId>util-Flyway-installer</artifactId>
             <version>1.0</version>
         </dependency>
     </dependencies>
@@ -37,7 +37,7 @@ Below is an example project's POM showing how to build using the Liquibase insta
                 <configuration>
                     <archive>
                         <manifest>
-                            <mainClass>com.hpe.caf.utilliquibaseinstaller.Application</mainClass>
+                            <mainClass>com.hpe.caf.utilFlywayinstaller.Application</mainClass>
                         </manifest>
                     </archive>
                     <descriptorRefs>
