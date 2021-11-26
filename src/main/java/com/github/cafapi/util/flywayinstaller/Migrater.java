@@ -39,6 +39,7 @@ public final class Migrater
                                final String password,
                                final String dbName ) throws SQLException
     {
+        System.out.println("fullConnectionString "+fullConnectionString);
         final String connectionUrl = defineConnectionUrl(fullConnectionString, connectionString, dbName);
         System.out.println("connectionUrl "+ connectionUrl);
         boolean dbExists = checkDBExists(connectionUrl, username, password);
@@ -87,7 +88,10 @@ public final class Migrater
             throw new RuntimeException("We should have either fullConnectionString or (connectionString and dbName)");
         }
         if(!fullConnectionString.isEmpty()){
-            return fullConnectionString.substring(0, fullConnectionString.lastIndexOf('?')+1);
+            if(fullConnectionString.contains("?")){
+                return fullConnectionString.substring(0, fullConnectionString.lastIndexOf('?')+1);
+            }
+            return fullConnectionString;
         } else {
             return connectionString +"/"+ dbName;
         }
