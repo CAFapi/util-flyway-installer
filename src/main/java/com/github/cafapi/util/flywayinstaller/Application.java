@@ -95,7 +95,7 @@ public final class Application implements Callable<Integer>
         try {
             Migrater.migrate(allowDBDeletion, fullConnectionString, connectionString, username, password, dbName);
         } catch (final RuntimeException | SQLException e) {
-            LOGGER.error(e.getMessage());
+            System.out.println(e.getMessage());
             return 1;
         }
         return 0;

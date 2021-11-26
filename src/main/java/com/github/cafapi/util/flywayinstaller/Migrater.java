@@ -40,7 +40,7 @@ public final class Migrater
                                final String dbName ) throws SQLException
     {
         final String connectionUrl = defineConnectionUrl(fullConnectionString, connectionString, dbName);
-        LOGGER.info("connectionUrl {}", connectionUrl);
+        System.out.println("connectionUrl "+ connectionUrl);
         boolean dbExists = checkDBExists(connectionUrl, username, password);
         
         if (dbExists && allowDBDeletion) {
@@ -78,7 +78,7 @@ public final class Migrater
                 .baselineOnMigrate(true)
                 .load();
         flyway.migrate();
-        LOGGER.info("DB update finished.");
+        System.out.println("DB update finished.");
     }
     
     private static String defineConnectionUrl(final String fullConnectionString, final String connectionString, final String dbName)
