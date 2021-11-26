@@ -37,9 +37,17 @@ public final class Application implements Callable<Integer>
     private boolean allowDBDeletion;
     
     @CommandLine.Option(
+            names = {"-db.connection.url"},
+            paramLabel = "<fullConnectionString>",
+            required = false,
+            description = "Specifies the full connection string to the database service. e.g. postgresql://localhost:3307/storageservice?characterEncoding=UTF8&rewriteBatchedStatements=true"
+    )
+    private String fullConnectionString;
+    
+    @CommandLine.Option(
             names = {"-db.connection"},
             paramLabel = "<connectionString>",
-            required = true,
+            required = false,
             description = "Specifies the connection string to the database service. " +
                     "e.g. postgresql://localhost:3307/"
     )
@@ -64,7 +72,7 @@ public final class Application implements Callable<Integer>
     @CommandLine.Option(
             names = {"-db.name"},
             paramLabel = "<dbName>",
-            required = true,
+            required = false,
             description = "Specifies the name of the database to be created or updated."
     )
     private String dbName;
@@ -85,7 +93,7 @@ public final class Application implements Callable<Integer>
     public Integer call()
     {
         try {
-            Migrater.migrate(allowDBDeletion, connectionString, username, password, dbName);
+            Migrater.migrate(allowDBDeletion, fullConnectionString, connectionString, username, password, dbName);
         } catch (final RuntimeException | SQLException e) {
             LOGGER.error(e.getMessage());
             return 1;

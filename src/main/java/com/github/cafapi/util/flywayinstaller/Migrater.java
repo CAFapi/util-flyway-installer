@@ -33,19 +33,20 @@ public final class Migrater
     }
     
     public static void migrate(final boolean allowDBDeletion,
+                               final String fullConnectionString,
                                final String connectionString,
                                final String username,
                                final String password,
                                final String dbName ) throws SQLException
     {
-        final String connectionUrl = connectionString+"/"+dbName;
+        final String connectionUrl = defineConnectionUrl(fullConnectionString, connectionString, dbName);
         boolean dbExists = checkDBExists(connectionUrl, username, password);
         
         if (dbExists && allowDBDeletion) {
             LOGGER.info("\n DB - Exists, and force deletion has been specified for: {}\n", dbName);
     
             final BasicDataSource basicDataSourceNoDB = new BasicDataSource();
-            basicDataSourceNoDB.setUrl(connectionString+"/");
+            basicDataSourceNoDB.setUrl(connectionUrl);
             basicDataSourceNoDB.setUsername(username);
             basicDataSourceNoDB.setPassword(password);
             
@@ -60,7 +61,7 @@ public final class Migrater
             LOGGER.info("about to perform DB installation from scratch.");
     
             final BasicDataSource basicDataSourceNoDB = new BasicDataSource();
-            basicDataSourceNoDB.setUrl(connectionString+"/");
+            basicDataSourceNoDB.setUrl(connectionUrl);
             basicDataSourceNoDB.setUsername(username);
             basicDataSourceNoDB.setPassword(password);
             
@@ -77,6 +78,20 @@ public final class Migrater
                 .load();
         flyway.migrate();
         LOGGER.info("DB update finished.");
+    }
+    
+    private static String defineConnectionUrl(final String fullConnectionString, final String connectionString, final String dbName)
+    {
+        if(fullConnectionString.isEmpty() && (connectionString.isEmpty() || dbName.isEmpty())){
+            throw new RuntimeException("We should have either fullConnectionString or (connectionString and dbName)");
+        }
+        final String connectionUrl;
+        if(!fullConnectionString.isEmpty()){
+            connectionUrl = fullConnectionString.substring(0, fullConnectionString.lastIndexOf('?')+1);
+        } else {
+            connectionUrl = connectionString +"/"+ dbName;
+        }
+        return connectionUrl;
     }
     
     private static boolean checkDBExists(final String connectionUrl, final String username,
