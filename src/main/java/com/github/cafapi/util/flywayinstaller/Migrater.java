@@ -34,18 +34,24 @@ public final class Migrater
     
     public static void migrate(final boolean allowDBDeletion,
                                final String fullConnectionString,
-                               final String connectionString,
+                               final String connectionStringIn,
                                final String username,
                                final String password,
-                               final String dbName ) throws SQLException
+                               final String dbNameIn ) throws SQLException
     {
-        System.out.println("fullConnectionString "+fullConnectionString);
-        final String connectionUrl = defineConnectionUrl(fullConnectionString, connectionString, dbName);
-        System.out.println("connectionUrl "+ connectionUrl);
+        final String dbName;
+        final String connectionString;
+        final String connectionUrl = defineConnectionUrl(fullConnectionString, connectionStringIn, dbNameIn);
+        if(!fullConnectionString.isEmpty()){
+            dbName = fullConnectionString.substring(fullConnectionString.lastIndexOf('/')+1) ;
+            connectionString = fullConnectionString.substring(0,fullConnectionString.lastIndexOf('/')+1);
+        }else {
+            dbName = dbNameIn;
+            connectionString = connectionStringIn;
+        }
         boolean dbExists = checkDBExists(connectionUrl, username, password);
-        
         if (dbExists && allowDBDeletion) {
-            LOGGER.info("\n DB - Exists, and force deletion has been specified for: {}\n", dbName);
+            System.out.println("\n DB - Exists, and force deletion has been specified for: {}\n"+ dbName);
     
             final BasicDataSource basicDataSourceNoDB = new BasicDataSource();
             basicDataSourceNoDB.setUrl(connectionUrl);
@@ -55,15 +61,15 @@ public final class Migrater
             try (final Connection connection = basicDataSourceNoDB.getConnection();
                  final Statement statement = connection.createStatement()){
                 statement.executeUpdate("DROP DATABASE " + dbName);
-                LOGGER.info("DELETED database: {}", dbName);
+                System.out.println("DELETED database: {}"+ dbName);
                 dbExists = false;
             }
         }
         if (!dbExists) {
-            LOGGER.info("about to perform DB installation from scratch.");
-    
+            System.out.println("about to perform DB installation from scratch.");
+            System.out.println("connectionUrl "+connectionUrl);
             final BasicDataSource basicDataSourceNoDB = new BasicDataSource();
-            basicDataSourceNoDB.setUrl(connectionUrl);
+            basicDataSourceNoDB.setUrl(connectionString);
             basicDataSourceNoDB.setUsername(username);
             basicDataSourceNoDB.setPassword(password);
             
