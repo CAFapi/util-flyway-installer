@@ -58,6 +58,11 @@
             <version>2.33</version>
         </dependency>
         <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-api</artifactId>
+            <version>1.7.30</version>
+        </dependency>
+        <dependency>
             <groupId>org.springframework</groupId>
             <artifactId>spring-core</artifactId>
             <version>${springVersion}</version>
@@ -66,6 +71,11 @@
             <groupId>org.springframework</groupId>
             <artifactId>spring-beans</artifactId>
             <version>${springVersion}</version>
+        </dependency>
+        <dependency>
+            <groupId>info.picocli</groupId>
+            <artifactId>picocli</artifactId>
+            <version>4.6.2</version>
         </dependency>
         
         <!--Db drivers-->
@@ -98,6 +108,18 @@
     <build>
         <plugins>
             <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-jar-plugin</artifactId>
+                <configuration>
+                    <archive>
+                        <manifest>
+                            <addClasspath>true</addClasspath>
+                            <mainClass>com.github.cafapi.util.flywayinstaller.Migrater</mainClass>
+                        </manifest>
+                    </archive>
+                </configuration>
+            </plugin>
+            <plugin>
                 <!-- Build an executable JAR -->
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-jar-plugin</artifactId>
@@ -105,7 +127,7 @@
                 <configuration>
                     <archive>
                         <manifest>
-                            <mainClass>com.github.cafapi.util.flywayinstaller.Application</mainClass>
+                            <mainClass>com.github.cafapi.util.flywayinstaller.Migrater</mainClass>
                         </manifest>
                     </archive>
                 </configuration>
