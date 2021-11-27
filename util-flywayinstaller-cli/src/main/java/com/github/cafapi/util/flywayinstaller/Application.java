@@ -1,5 +1,5 @@
 /*
- * Copyright 2021-2021 Micro Focus or one of its affiliates.
+ * Copyright 2021 Micro Focus or one of its affiliates.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,6 +20,8 @@ import java.util.concurrent.Callable;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import com.github.cafapi.util.flywayinstaller.exceptions.FlywayMigratorException;
 
 import picocli.CommandLine;
 
@@ -93,9 +95,11 @@ public final class Application implements Callable<Integer>
     public Integer call()
     {
         try {
-            Migrater.migrate(allowDBDeletion, fullConnectionString, connectionString, username, password, dbName);
-        } catch (final RuntimeException | SQLException e) {
-            System.out.println(e.getMessage());
+            LOGGER.info("Starting migration ...");
+            Migrator.migrate(allowDBDeletion, fullConnectionString, connectionString, username, password, dbName);
+            LOGGER.info("Migration completed ...");
+        } catch (final FlywayMigratorException | SQLException e) {
+            LOGGER.error(e.getMessage());
             return 1;
         }
         return 0;
