@@ -44,22 +44,13 @@ public final class Migrator
     {
         final String dbName;
         try (final BasicDataSource dbSource = new BasicDataSource()) {
-            final String fullConnectionUrl = defineDatabaseProperties(fullConnectionString, connectionString, dbNameInput);
+            final String fullConnectionUrl = getFullConnectionUrl(fullConnectionString, connectionString, dbNameInput);
             dbSource.setUrl(fullConnectionUrl.substring(0, fullConnectionUrl.lastIndexOf("/") + 1));
             dbName = fullConnectionUrl.substring(fullConnectionUrl.lastIndexOf('/') + 1);
             dbSource.setUsername(username);
             dbSource.setPassword(password);
-            boolean dbExists = checkDBExists(dbSource);
-            if (!dbExists || allowDBDeletion) {
-                LOGGER.info("\nDB {}- does not exist, or force deletion has been specified for it.\n", dbName);
-                
-                try (final Connection c = dbSource.getConnection();
-                     final Statement statement = c.createStatement()) {
-                    statement.executeUpdate("DROP DATABASE IF EXISTS " + dbName);
-                    LOGGER.info("DELETED database: {}", dbName);
-                    statement.executeUpdate("CREATE DATABASE " + dbName);
-                    LOGGER.info("Created new database: {}", dbName);
-                }
+            if(checkDBExists(dbSource) || allowDBDeletion) {
+                createNewDatabase(dbName, dbSource);
             }
             LOGGER.info("About to perform DB update.");
             final Flyway flyway = Flyway.configure()
@@ -73,7 +64,20 @@ public final class Migrator
         }
     }
     
-    private static String defineDatabaseProperties(
+    private static void createNewDatabase(final String dbName, final BasicDataSource dbSource) throws SQLException
+    {
+            LOGGER.info("\nDB {}- does not exist, or force deletion has been specified for it.\n", dbName);
+            
+            try (final Connection c = dbSource.getConnection();
+                 final Statement statement = c.createStatement()) {
+                statement.executeUpdate("DROP DATABASE IF EXISTS " + dbName);
+                LOGGER.info("DELETED database: {}", dbName);
+                statement.executeUpdate("CREATE DATABASE " + dbName);
+                LOGGER.info("Created new database: {}", dbName);
+            }
+    }
+    
+    private static String getFullConnectionUrl(
             final String fullConnectionString,
             final String connectionString,
             final String dbName) throws FlywayMigratorException
