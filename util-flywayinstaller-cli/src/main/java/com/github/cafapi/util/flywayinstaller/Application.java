@@ -23,7 +23,7 @@ import org.slf4j.LoggerFactory;
 
 import picocli.CommandLine;
 
-@CommandLine.Command(mixinStandardHelpOptions = true, name = "util-flyway-installer")
+@CommandLine.Command(mixinStandardHelpOptions = true, name = "util-flywayinstaller")
 public final class Application implements Callable<Integer>
 {
     private static final Logger LOGGER = LoggerFactory.getLogger(Application.class);

@@ -6,7 +6,7 @@ The Flyway Database Installer is a generic  java application that will create an
 To make use of the installer use the following steps:
 
 1. Create a new Java project.
-2. Add com.github.cafapi.util-Flyway-installer as a dependency.
+2. Add com.github.cafapi.util-flywayinstaller as a dependency.
 3. Create a Flyway change log called changelog.xml and place this in the `resources` folder of the project.
 4. Build the project with the mainClass as:
 
@@ -25,7 +25,7 @@ Below is an example project's POM showing how to build using the Flyway installe
     <dependencies>
         <dependency>
             <groupId>com.hpe.caf.util</groupId>
-            <artifactId>util-Flyway-installer</artifactId>
+            <artifactId>util-flywayinstaller</artifactId>
             <version>1.0</version>
         </dependency>
     </dependencies>
