@@ -31,7 +31,7 @@ public final class Application implements Callable<Integer>
     private static final Logger LOGGER = LoggerFactory.getLogger(Application.class);
     
     @CommandLine.Option(
-            names = {"--fd"},
+            names = {"-fd"},
             paramLabel = "<allowDBDeletion>",
             defaultValue = "false",
             description = "Enables the deletion of existing database for a fresh install."
