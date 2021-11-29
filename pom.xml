@@ -42,8 +42,8 @@
         <copyrightYear>2021</copyrightYear>
         <copyrightNotice>Copyright ${copyrightYear} Micro Focus or one of its affiliates.</copyrightNotice>
         <skipLicenseHeadersCheck>false</skipLicenseHeadersCheck>
-        <enforceCorrectDependencies>false</enforceCorrectDependencies>
-        <enforceBannedDependencies>false</enforceBannedDependencies>
+        <enforceCorrectDependencies>true</enforceCorrectDependencies>
+        <enforceBannedDependencies>true</enforceBannedDependencies>
         <slf4j.version>1.7.30</slf4j.version>
         <maven.compiler.source>1.8</maven.compiler.source>
         <maven.compiler.target>1.8</maven.compiler.target>
@@ -54,32 +54,17 @@
             <dependency>
                 <groupId>com.github.cafapi</groupId>
                 <artifactId>util-flywayinstaller</artifactId>
-                <version>1.0.0-SNAPSHOT</version>
+                <version>${project.version}</version>
             </dependency>
             <dependency>
                 <groupId>com.github.cafapi</groupId>
                 <artifactId>util-flywayinstaller-cli</artifactId>
-                <version>1.0.0-SNAPSHOT</version>
-            </dependency>
-            <dependency>
-                <groupId>org.flywaydb</groupId>
-                <artifactId>flyway-core</artifactId>
-                <version>8.0.5</version>
+                <version>${project.version}</version>
             </dependency>
             <dependency>
                 <groupId>com.github.cafapi.logging</groupId>
                 <artifactId>caf-logging-logback</artifactId>
                 <version>1.3.0-95</version>
-            </dependency>
-            <dependency>
-                <groupId>org.slf4j</groupId>
-                <artifactId>jcl-over-slf4j</artifactId>
-                <version>${slf4j.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.slf4j</groupId>
-                <artifactId>slf4j-api</artifactId>
-                <version>${slf4j.version}</version>
             </dependency>
             <dependency>
                 <groupId>info.picocli</groupId>
@@ -98,12 +83,27 @@
                 </exclusions>
             </dependency>
             <dependency>
+                <groupId>org.flywaydb</groupId>
+                <artifactId>flyway-core</artifactId>
+                <version>8.0.5</version>
+            </dependency>
+            <dependency>
+                <groupId>org.slf4j</groupId>
+                <artifactId>jcl-over-slf4j</artifactId>
+                <version>${slf4j.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.slf4j</groupId>
+                <artifactId>slf4j-api</artifactId>
+                <version>${slf4j.version}</version>
+            </dependency>
+            <dependency>
                 <groupId>org.postgresql</groupId>
                 <artifactId>postgresql</artifactId>
                 <version>42.3.1</version>
                 <scope>runtime</scope>
             </dependency>
-    </dependencies>
+        </dependencies>
     </dependencyManagement>
     
 </project>
