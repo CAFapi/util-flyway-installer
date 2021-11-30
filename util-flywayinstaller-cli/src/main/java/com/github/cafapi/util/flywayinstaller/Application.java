@@ -30,6 +30,10 @@ public final class Application implements Callable<Integer>
 {
     private static final Logger LOGGER = LoggerFactory.getLogger(Application.class);
     
+    private Application()
+    {
+    }
+    
     @CommandLine.Option(
             names = {"-fd"},
             paramLabel = "<allowDBDeletion>",
@@ -70,7 +74,7 @@ public final class Application implements Callable<Integer>
             description = "Specifies the password to access the database."
     )
     private String password;
-    
+
     @CommandLine.Option(
             names = {"-db.name"},
             paramLabel = "<dbName>",
@@ -78,19 +82,13 @@ public final class Application implements Callable<Integer>
             description = "Specifies the name of the database to be created or updated."
     )
     private String dbName;
-    
 
-    
-    private Application()
-    {
-    }
-    
     public static void main(final String[] args)
     {
         final int exitCode = new CommandLine(new Application()).execute(args);
         System.exit(exitCode);
     }
-    
+
     @Override
     public Integer call()
     {
@@ -99,7 +97,6 @@ public final class Application implements Callable<Integer>
             Migrator.migrate(allowDBDeletion, fullConnectionString, connectionString, username, password, dbName);
             LOGGER.info("Migration completed ...");
         } catch (final FlywayMigratorException | SQLException e) {
-            LOGGER.error(e.getMessage());
             return 1;
         }
         return 0;

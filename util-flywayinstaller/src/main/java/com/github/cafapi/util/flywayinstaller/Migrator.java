@@ -30,53 +30,63 @@ import com.github.cafapi.util.flywayinstaller.exceptions.FlywayMigratorException
 public final class Migrator
 {
     private static final Logger LOGGER = LoggerFactory.getLogger(Migrator.class);
-    
+
     private Migrator()
     {
     }
-    
+
     public static void migrate(final boolean allowDBDeletion,
                                final String fullConnectionString,
                                final String connectionString,
                                final String username,
                                final String password,
-                               final String dbNameInput) throws SQLException, FlywayMigratorException
+                               final String dbName) throws SQLException, FlywayMigratorException
     {
-        final String dbName;
         try (final BasicDataSource dbSource = new BasicDataSource()) {
-            final String fullConnectionUrl = getFullConnectionUrl(fullConnectionString, connectionString, dbNameInput);
-            dbSource.setUrl(fullConnectionUrl.substring(0, fullConnectionUrl.lastIndexOf("/") + 1));
-            dbName = fullConnectionUrl.substring(fullConnectionUrl.lastIndexOf('/') + 1);
+            final String fullConnectionUrl = getFullConnectionUrl(fullConnectionString, connectionString, dbName);
+
+            dbSource.setUrl(fullConnectionUrl);
             dbSource.setUsername(username);
             dbSource.setPassword(password);
-            if(checkDBExists(dbSource) || allowDBDeletion) {
-                createNewDatabase(dbName, dbSource);
+
+            final boolean exists = checkDBExists(dbSource);
+            if (!exists || allowDBDeletion) {
+                resetOrCreateDatabase(dbSource, exists);
             }
+
             LOGGER.info("About to perform DB update.");
             final Flyway flyway = Flyway.configure()
-                    .dataSource(dbSource.getUrl() + dbName, username, password)
+                    .dataSource(dbSource.getUrl(), username, password)
                     .baselineOnMigrate(true)
                     .load();
             flyway.migrate();
             LOGGER.info("DB update finished.");
-        } catch (FlywayMigratorException e) {
+        } catch (final FlywayMigratorException e) {
             LOGGER.error("Issue while trying to perform the upgrade.", e);
         }
     }
-    
-    private static void createNewDatabase(final String dbName, final BasicDataSource dbSource) throws SQLException
+
+    private static void resetOrCreateDatabase(final BasicDataSource dbSource, final boolean exists) throws SQLException
     {
-            LOGGER.info("\nDB {}- does not exist, or force deletion has been specified for it.\n", dbName);
-            
-            try (final Connection c = dbSource.getConnection();
-                 final Statement statement = c.createStatement()) {
-                statement.executeUpdate("DROP DATABASE IF EXISTS " + dbName);
-                LOGGER.info("DELETED database: {}", dbName);
-                statement.executeUpdate("CREATE DATABASE " + dbName);
-                LOGGER.info("Created new database: {}", dbName);
+        final String dbName = dbSource.getUrl().substring(dbSource.getUrl().lastIndexOf("/") + 1);
+
+        LOGGER.info("\nDB {}- does not exist, or force deletion has been specified for it.\n", dbName);
+        
+        final String url = dbSource.getUrl().substring(0, dbSource.getUrl().lastIndexOf("/") + 1);
+        dbSource.setUrl(url);
+        
+        try (final Connection c = dbSource.getConnection();
+             final Statement statement = c.createStatement()
+        ) {
+            if (exists) {
+                statement.executeUpdate("DROP DATABASE " + dbName);
             }
+            LOGGER.info("DELETED database: {}", dbName);
+            statement.executeUpdate("CREATE DATABASE " + dbName);
+            LOGGER.info("Created new database: {}", dbName);
+        }
     }
-    
+
     private static String getFullConnectionUrl(
             final String fullConnectionString,
             final String connectionString,
@@ -93,20 +103,13 @@ public final class Migrator
             return connectionString + "/" + dbName;
         }
     }
-    
-    private static boolean checkDBExists(final BasicDataSource dbSource) throws SQLException
+
+    private static boolean checkDBExists(final BasicDataSource dbSource)
     {
-        try (final BasicDataSource dataSource = new BasicDataSource()) {
-            dataSource.setUrl(dbSource.getUrl());
-            dataSource.setUsername(dataSource.getUsername());
-            dataSource.setPassword(dataSource.getPassword());
-            try (final Connection ignored = dataSource.getConnection()) {
-                return true;
-            } catch (final Exception e) {
-                return false;
-            }
+        try (final Connection ignored = dbSource.getConnection()) {
+            return true;
+        } catch (final Exception e) {
+            return false;
         }
     }
-    
 }
-

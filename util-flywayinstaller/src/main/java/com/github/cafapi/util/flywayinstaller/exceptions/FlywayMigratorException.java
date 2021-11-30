@@ -15,10 +15,15 @@
  */
 package com.github.cafapi.util.flywayinstaller.exceptions;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 public class FlywayMigratorException extends Exception
 {
+    private static final Logger LOGGER = LoggerFactory.getLogger(FlywayMigratorException.class);
     public FlywayMigratorException(final String exceptionDetails)
     {
         super(exceptionDetails);
+        LOGGER.error(exceptionDetails);
     }
 }
