@@ -47,6 +47,7 @@ public final class Migrator
                                final LogLevel logLevel) throws SQLException, FlywayMigratorException
     {
         setLogLevel(logLevel.toString());
+        LOGGER.debug("arguments received {} {} {} {} {} {}", allowDBDeletion, connectionString, username, password, dbName, logLevel);
         LOGGER.info("Starting migration ...");
         try (final BasicDataSource dbSource = new BasicDataSource()) {
             dbSource.setUrl(connectionString);
