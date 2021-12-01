@@ -47,7 +47,7 @@ public final class Application implements Callable<Integer>
                     "e.g. jdbc:postgresql://localhost:3307/"
     )
     public void checkDbUrl(final String url) {
-        if (!url.matches("^jdbc:postgresql:\\/\\/.*\\/$")) {
+        if (!url.matches("^jdbc:postgresql:\\/\\/.*\\/{1}[^\\/?]+$")) {
             throw new CommandLine.ParameterException(spec.commandLine(),
                     String.format("Invalid value '%s' for option '-db.connection'.\n" +
                             "The format provided is incorrect. Here is an example: jdbc:postgresql://localhost:3307/", url));

@@ -50,7 +50,7 @@ public final class Migrator
         LOGGER.debug("Arguments received {} {} {} {} {} {}", allowDBDeletion, connectionString, username, password, dbName, logLevel);
         LOGGER.info("Starting migration ...");
         try (final BasicDataSource dbSource = new BasicDataSource()) {
-            dbSource.setUrl(connectionString);
+            dbSource.setUrl(connectionString.substring(0, connectionString.lastIndexOf("/")+1));
             dbSource.setUsername(username);
             dbSource.setPassword(password);
 
@@ -108,6 +108,13 @@ public final class Migrator
             LOGGER.info("Database {} exists: {}", dbName, exists);
             return exists;
         }
+    }
+
+    public static void main(String[] args)
+    {
+        String str = "jdbc:postgresql://jobservice-integrationtests-postgres:5432/";
+
+        System.out.println(str.substring(0, str.lastIndexOf("/")+1));
     }
 
 }

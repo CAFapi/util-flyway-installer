@@ -17,5 +17,5 @@ package com.github.cafapi.util.flywayinstaller;
 
 public enum LogLevel
 {
-    DEBUG, INFO, ERROR;
+    DEBUG, INFO, WARNING, ERROR;
 }
