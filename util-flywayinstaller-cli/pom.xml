@@ -21,7 +21,7 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <parent>
         <artifactId>util-flywayinstaller-aggregator</artifactId>
-        <groupId>com.github.cafapi</groupId>
+        <groupId>com.github.cafapi.util.flywayinstaller</groupId>
         <version>1.0.0-SNAPSHOT</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
@@ -30,7 +30,7 @@
     
     <dependencies>
         <dependency>
-            <groupId>com.github.cafapi</groupId>
+            <groupId>com.github.cafapi.util.flywayinstaller</groupId>
             <artifactId>util-flywayinstaller</artifactId>
         </dependency>
         <dependency>
