@@ -18,9 +18,6 @@ package com.github.cafapi.util.flywayinstaller;
 import java.sql.SQLException;
 import java.util.concurrent.Callable;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import com.github.cafapi.util.flywayinstaller.exceptions.FlywayMigratorException;
 
 import picocli.CommandLine;
@@ -40,14 +37,23 @@ public final class Application implements Callable<Integer>
             description = "Enables the deletion of existing database for a fresh install."
     )
     private boolean allowDBDeletion;
-
+    @CommandLine.Spec
+    CommandLine.Model.CommandSpec spec;
     @CommandLine.Option(
             names = {"-db.connection"},
             paramLabel = "<connectionString>",
-            defaultValue = "",
+            required = true,
             description = "Specifies the connection string to the database service. " +
-                    "e.g. postgresql://localhost:3307/"
+                    "e.g. jdbc:postgresql://localhost:3307/"
     )
+    public void checkDbUrl(final String url) {
+        if (!url.matches("^jdbc:postgresql:\\/\\/.*\\/$")) {
+            throw new CommandLine.ParameterException(spec.commandLine(),
+                    String.format("Invalid value '%s' for option '-db.connection'.\n" +
+                            "The format provided is incorrect. Here is an example: jdbc:postgresql://localhost:3307/", url));
+        }
+        connectionString = url;
+    }
     private String connectionString;
 
     @CommandLine.Option(
@@ -69,6 +75,7 @@ public final class Application implements Callable<Integer>
     @CommandLine.Option(
             names = {"-db.name"},
             paramLabel = "<dbName>",
+            required = true,
             defaultValue = "",
             description = "Specifies the name of the database to be created or updated."
     )

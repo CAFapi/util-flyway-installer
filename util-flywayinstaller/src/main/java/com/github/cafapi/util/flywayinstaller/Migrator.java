@@ -47,7 +47,7 @@ public final class Migrator
                                final LogLevel logLevel) throws SQLException, FlywayMigratorException
     {
         setLogLevel(logLevel.toString());
-        LOGGER.debug("arguments received {} {} {} {} {} {}", allowDBDeletion, connectionString, username, password, dbName, logLevel);
+        LOGGER.debug("Arguments received {} {} {} {} {} {}", allowDBDeletion, connectionString, username, password, dbName, logLevel);
         LOGGER.info("Starting migration ...");
         try (final BasicDataSource dbSource = new BasicDataSource()) {
             dbSource.setUrl(connectionString);
@@ -90,7 +90,7 @@ public final class Migrator
         ) {
             if (exists) {
                 LOGGER.info("force deletion has been specified.\nDeleting database {}", dbName);
-                statement.executeUpdate("DROP DATABASE " + dbName + " WITH (FORCE)");
+                statement.executeUpdate("DROP DATABASE " + dbName );
                 LOGGER.info("DELETED database: {}", dbName);
             }
             statement.executeUpdate("CREATE DATABASE " + dbName);
