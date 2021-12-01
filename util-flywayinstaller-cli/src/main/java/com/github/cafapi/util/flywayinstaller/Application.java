@@ -28,12 +28,11 @@ import picocli.CommandLine;
 @CommandLine.Command(mixinStandardHelpOptions = true, name = "util-flywayinstaller")
 public final class Application implements Callable<Integer>
 {
-    private static final Logger LOGGER = LoggerFactory.getLogger(Application.class);
-    
+
     private Application()
     {
     }
-    
+
     @CommandLine.Option(
             names = {"-fd"},
             paramLabel = "<allowDBDeletion>",
@@ -41,15 +40,7 @@ public final class Application implements Callable<Integer>
             description = "Enables the deletion of existing database for a fresh install."
     )
     private boolean allowDBDeletion;
-    
-    @CommandLine.Option(
-            names = {"-db.connection.url"},
-            paramLabel = "<fullConnectionString>",
-            defaultValue = "",
-            description = "Specifies the full connection string to the database service. e.g. postgresql://localhost:3307/storageservice?characterEncoding=UTF8&rewriteBatchedStatements=true"
-    )
-    private String fullConnectionString;
-    
+
     @CommandLine.Option(
             names = {"-db.connection"},
             paramLabel = "<connectionString>",
@@ -58,7 +49,7 @@ public final class Application implements Callable<Integer>
                     "e.g. postgresql://localhost:3307/"
     )
     private String connectionString;
-    
+
     @CommandLine.Option(
             names = {"-db.user"},
             paramLabel = "<username>",
@@ -66,7 +57,7 @@ public final class Application implements Callable<Integer>
             description = "Specifies the username to access the database."
     )
     private String username;
-    
+
     @CommandLine.Option(
             names = {"-db.pass"},
             paramLabel = "<password>",
@@ -83,6 +74,14 @@ public final class Application implements Callable<Integer>
     )
     private String dbName;
 
+    @CommandLine.Option(
+            names = {"-log"},
+            paramLabel = "<logLevel>",
+            defaultValue = "INFO",
+            description = "Specifies the logging level of the installer. Can be DEBUG, INFO, WARNING or ERROR."
+    )
+    private LogLevel logLevel;
+
     public static void main(final String[] args)
     {
         final int exitCode = new CommandLine(new Application()).execute(args);
@@ -93,9 +92,7 @@ public final class Application implements Callable<Integer>
     public Integer call()
     {
         try {
-            LOGGER.info("Starting migration ...");
-            Migrator.migrate(allowDBDeletion, fullConnectionString, connectionString, username, password, dbName);
-            LOGGER.info("Migration completed ...");
+            Migrator.migrate(allowDBDeletion, connectionString, username, password, dbName, logLevel);
         } catch (final FlywayMigratorException | SQLException e) {
             return 1;
         }

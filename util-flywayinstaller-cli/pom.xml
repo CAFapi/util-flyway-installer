@@ -37,15 +37,6 @@
             <groupId>info.picocli</groupId>
             <artifactId>picocli</artifactId>
         </dependency>
-        <dependency>
-            <groupId>org.slf4j</groupId>
-            <artifactId>slf4j-api</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>com.github.cafapi.logging</groupId>
-            <artifactId>caf-logging-logback</artifactId>
-            <scope>runtime</scope>
-        </dependency>
     </dependencies>
     
     <build>

@@ -21,9 +21,16 @@ import org.slf4j.LoggerFactory;
 public class FlywayMigratorException extends Exception
 {
     private static final Logger LOGGER = LoggerFactory.getLogger(FlywayMigratorException.class);
+
     public FlywayMigratorException(final String exceptionDetails)
     {
         super(exceptionDetails);
         LOGGER.error(exceptionDetails);
+    }
+
+    public FlywayMigratorException(final String exceptionDetails, final Exception exception)
+    {
+        super(exceptionDetails);
+        LOGGER.error(exceptionDetails + "\\"+exception.getMessage());
     }
 }

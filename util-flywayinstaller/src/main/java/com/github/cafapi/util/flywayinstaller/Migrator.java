@@ -18,6 +18,7 @@ package com.github.cafapi.util.flywayinstaller;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.List;
 
 import org.apache.commons.dbcp2.BasicDataSource;
 import org.flywaydb.core.Flyway;
@@ -25,6 +26,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.github.cafapi.util.flywayinstaller.exceptions.FlywayMigratorException;
+
+import ch.qos.logback.classic.Level;
+import ch.qos.logback.classic.LoggerContext;
 
 
 public final class Migrator
@@ -36,22 +40,23 @@ public final class Migrator
     }
 
     public static void migrate(final boolean allowDBDeletion,
-                               final String fullConnectionString,
                                final String connectionString,
                                final String username,
                                final String password,
-                               final String dbName) throws SQLException, FlywayMigratorException
+                               final String dbName,
+                               final LogLevel logLevel) throws SQLException, FlywayMigratorException
     {
+        setLogLevel(logLevel.toString());
+        LOGGER.info("Starting migration ...");
         try (final BasicDataSource dbSource = new BasicDataSource()) {
-            final String fullConnectionUrl = getFullConnectionUrl(fullConnectionString, connectionString, dbName);
-
-            dbSource.setUrl(fullConnectionUrl);
+            dbSource.setUrl(connectionString);
             dbSource.setUsername(username);
             dbSource.setPassword(password);
 
-            final boolean exists = checkDBExists(dbSource);
+            final boolean exists = checkDBExists(dbSource, dbName);
+            LOGGER.debug("Database exists: {}", exists);
             if (!exists || allowDBDeletion) {
-                resetOrCreateDatabase(dbSource, exists);
+                resetOrCreateDatabase(dbSource, exists, dbName);
             }
 
             LOGGER.info("About to perform DB update.");
@@ -61,55 +66,46 @@ public final class Migrator
                     .load();
             flyway.migrate();
             LOGGER.info("DB update finished.");
-        } catch (final FlywayMigratorException e) {
-            LOGGER.error("Issue while trying to perform the upgrade.", e);
+        } catch (final SQLException e) {
+            throw new FlywayMigratorException("Issue while trying to perform the migration.", e);
         }
+        LOGGER.info("Migration completed ...");
     }
 
-    private static void resetOrCreateDatabase(final BasicDataSource dbSource, final boolean exists) throws SQLException
+    private static void setLogLevel(final String logLevel)
     {
-        final String dbName = dbSource.getUrl().substring(dbSource.getUrl().lastIndexOf("/") + 1);
+        final LoggerContext loggerContext = (LoggerContext) LoggerFactory.getILoggerFactory();
+        final List<ch.qos.logback.classic.Logger> loggerList = loggerContext.getLoggerList();
+        loggerList.forEach(tmpLogger -> tmpLogger.setLevel(Level.toLevel(logLevel)));
+        LOGGER.debug("Setting log level to {}", logLevel);
+    }
 
-        LOGGER.info("\nDB {}- does not exist, or force deletion has been specified for it.\n", dbName);
-        
-        final String url = dbSource.getUrl().substring(0, dbSource.getUrl().lastIndexOf("/") + 1);
-        dbSource.setUrl(url);
-        
+    private static void resetOrCreateDatabase(final BasicDataSource dbSource, final boolean exists, final String dbName) throws SQLException
+    {
+        dbSource.setUrl(dbSource.getUrl() + "postgres");
+        LOGGER.debug(dbSource.getUrl());
         try (final Connection c = dbSource.getConnection();
              final Statement statement = c.createStatement()
         ) {
             if (exists) {
-                statement.executeUpdate("DROP DATABASE " + dbName);
+                LOGGER.info("force deletion has been specified.\nDeleting database {}", dbName);
+                statement.executeUpdate("DROP DATABASE " + dbName + " WITH (FORCE)");
+                LOGGER.info("DELETED database: {}", dbName);
             }
-            LOGGER.info("DELETED database: {}", dbName);
             statement.executeUpdate("CREATE DATABASE " + dbName);
             LOGGER.info("Created new database: {}", dbName);
         }
     }
 
-    private static String getFullConnectionUrl(
-            final String fullConnectionString,
-            final String connectionString,
-            final String dbName) throws FlywayMigratorException
+    private static boolean checkDBExists(final BasicDataSource dbSource, final String dbName) throws SQLException
     {
-        if (fullConnectionString.isEmpty() && (connectionString.isEmpty() || dbName.isEmpty())) {
-            throw new FlywayMigratorException("We should have either fullConnectionString or (connectionString and dbName)");
-        }
-        if (!fullConnectionString.isEmpty()) {
-            return fullConnectionString.contains("?") ?
-                    fullConnectionString.substring(0, fullConnectionString.lastIndexOf('?') + 1) :
-                    fullConnectionString;
-        } else {
-            return connectionString + "/" + dbName;
-        }
-    }
-
-    private static boolean checkDBExists(final BasicDataSource dbSource)
-    {
-        try (final Connection ignored = dbSource.getConnection()) {
-            return true;
-        } catch (final Exception e) {
-            return false;
+        try (
+                final Connection c = dbSource.getConnection();
+                final Statement statement = c.createStatement()
+        ) {
+            final boolean exists = statement.executeQuery("SELECT * FROM pg_database WHERE datname=lower('" + dbName + "');").next();
+            LOGGER.info("Database {} exists: {}", dbName, exists);
+            return exists;
         }
     }
 
