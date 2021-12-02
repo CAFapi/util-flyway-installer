@@ -42,13 +42,18 @@ public final class Migrator
 
     public static void migrate(final boolean allowDBDeletion,
                                final String connectionString,
+                               final String dbName,
                                final String username,
                                final String password,
-                               final String dbName,
                                final LogLevel logLevel) throws FlywayMigratorException
     {
         setLogLevel(logLevel);
-        LOGGER.debug("Arguments received {} {} {} {} {} {}", allowDBDeletion, connectionString, username, password, dbName, logLevel);
+        LOGGER.debug("Arguments received allowDBDeletion: {}\n connectionString: {}\n dbName: {}" +
+                        "\n username: {}\n password: {}\n logLevel: {}",
+                allowDBDeletion,
+                connectionString,
+                dbName, username,
+                password, logLevel);
         LOGGER.info("Starting migration ...");
         try (final BasicDataSource dbSource = new BasicDataSource()) {
             dbSource.setUrl(checkAndConvertConnectionUrl(connectionString));
@@ -62,6 +67,7 @@ public final class Migrator
             }
 
             LOGGER.info("About to perform DB update.");
+            System.out.println("db url "+dbSource.getUrl());
             final Flyway flyway = Flyway.configure()
                     .dataSource(dbSource.getUrl(), username, password)
                     .baselineOnMigrate(true)
@@ -86,7 +92,8 @@ public final class Migrator
             final boolean exists,
             final String dbName) throws SQLException
     {
-        dbSource.setUrl(dbSource.getUrl() + "postgres");
+        final String savedUrl = dbSource.getUrl();
+        dbSource.setUrl(dbSource.getUrl()+"postgres");
         LOGGER.debug(dbSource.getUrl());
         try (final Connection connection = dbSource.getConnection();
              final Statement statement = connection.createStatement()
@@ -99,6 +106,7 @@ public final class Migrator
             statement.executeUpdate("CREATE DATABASE " + dbName);
             LOGGER.info("Created new database: {}", dbName);
         }
+        dbSource.setUrl(savedUrl);
     }
 
     private static boolean checkDBExists(final BasicDataSource dbSource, final String dbName) throws SQLException

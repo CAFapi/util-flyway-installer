@@ -88,7 +88,7 @@ public final class Application implements Callable<Integer>
     public Integer call()
     {
         try {
-            Migrator.migrate(allowDBDeletion, connectionString, username, password, dbName, logLevel);
+            Migrator.migrate(allowDBDeletion, connectionString, dbName, username, password, logLevel);
         } catch (final FlywayMigratorException e) {
             return 1;
         }
