@@ -15,7 +15,6 @@
  */
 package com.github.cafapi.util.flywayinstaller;
 
-import java.sql.SQLException;
 import java.util.concurrent.Callable;
 
 import com.github.cafapi.util.flywayinstaller.exceptions.FlywayMigratorException;
@@ -37,8 +36,6 @@ public final class Application implements Callable<Integer>
             description = "Enables the deletion of existing database for a fresh install."
     )
     private boolean allowDBDeletion;
-    @CommandLine.Spec
-    CommandLine.Model.CommandSpec spec;
     @CommandLine.Option(
             names = {"-db.connection"},
             paramLabel = "<connectionString>",
@@ -46,14 +43,6 @@ public final class Application implements Callable<Integer>
             description = "Specifies the connection string to the database service. " +
                     "e.g. jdbc:postgresql://localhost:3307/"
     )
-    public void checkDbUrl(final String url) {
-        if (!url.matches("^jdbc:postgresql:\\/\\/.*\\/{1}[^\\/?]+$")) {
-            throw new CommandLine.ParameterException(spec.commandLine(),
-                    String.format("Invalid value '%s' for option '-db.connection'.\n" +
-                            "The format provided is incorrect. Here is an example: jdbc:postgresql://localhost:3307/", url));
-        }
-        connectionString = url;
-    }
     private String connectionString;
 
     @CommandLine.Option(
@@ -100,7 +89,7 @@ public final class Application implements Callable<Integer>
     {
         try {
             Migrator.migrate(allowDBDeletion, connectionString, username, password, dbName, logLevel);
-        } catch (final FlywayMigratorException | SQLException e) {
+        } catch (final FlywayMigratorException e) {
             return 1;
         }
         return 0;

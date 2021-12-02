@@ -31,6 +31,6 @@ public class FlywayMigratorException extends Exception
     public FlywayMigratorException(final String exceptionDetails, final Exception exception)
     {
         super(exceptionDetails);
-        LOGGER.error(exceptionDetails + "\\"+exception.getMessage());
+        LOGGER.error("{} \\\\ {}", exceptionDetails, exception.getMessage());
     }
 }

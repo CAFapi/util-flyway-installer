@@ -18,7 +18,8 @@ package com.github.cafapi.util.flywayinstaller;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.sql.Statement;
-import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import org.apache.commons.dbcp2.BasicDataSource;
 import org.flywaydb.core.Flyway;
@@ -34,7 +35,7 @@ import ch.qos.logback.classic.LoggerContext;
 public final class Migrator
 {
     private static final Logger LOGGER = LoggerFactory.getLogger(Migrator.class);
-
+    private static final String CONNECTION_URL_REGEX = "^.*\\/\\/.+:\\d+\\/";
     private Migrator()
     {
     }
@@ -44,13 +45,13 @@ public final class Migrator
                                final String username,
                                final String password,
                                final String dbName,
-                               final LogLevel logLevel) throws SQLException, FlywayMigratorException
+                               final LogLevel logLevel) throws FlywayMigratorException
     {
-        setLogLevel(logLevel.toString());
+        setLogLevel(logLevel);
         LOGGER.debug("Arguments received {} {} {} {} {} {}", allowDBDeletion, connectionString, username, password, dbName, logLevel);
         LOGGER.info("Starting migration ...");
         try (final BasicDataSource dbSource = new BasicDataSource()) {
-            dbSource.setUrl(connectionString.substring(0, connectionString.lastIndexOf("/")+1));
+            dbSource.setUrl(checkAndConvertConnectionUrl(connectionString));
             dbSource.setUsername(username);
             dbSource.setPassword(password);
 
@@ -73,20 +74,22 @@ public final class Migrator
         LOGGER.info("Migration completed ...");
     }
 
-    private static void setLogLevel(final String logLevel)
+    private static void setLogLevel(final LogLevel logLevel)
     {
         final LoggerContext loggerContext = (LoggerContext) LoggerFactory.getILoggerFactory();
-        final List<ch.qos.logback.classic.Logger> loggerList = loggerContext.getLoggerList();
-        loggerList.forEach(tmpLogger -> tmpLogger.setLevel(Level.toLevel(logLevel)));
-        LOGGER.debug("Setting log level to {}", logLevel);
+        loggerContext.getLoggerList().forEach(tmpLogger -> tmpLogger.setLevel(Level.toLevel(logLevel.name())));
+        LOGGER.debug("Log level set to {}.", logLevel);
     }
 
-    private static void resetOrCreateDatabase(final BasicDataSource dbSource, final boolean exists, final String dbName) throws SQLException
+    private static void resetOrCreateDatabase(
+            final BasicDataSource dbSource,
+            final boolean exists,
+            final String dbName) throws SQLException
     {
         dbSource.setUrl(dbSource.getUrl() + "postgres");
         LOGGER.debug(dbSource.getUrl());
-        try (final Connection c = dbSource.getConnection();
-             final Statement statement = c.createStatement()
+        try (final Connection connection = dbSource.getConnection();
+             final Statement statement = connection.createStatement()
         ) {
             if (exists) {
                 LOGGER.info("force deletion has been specified.\nDeleting database {}", dbName);
@@ -101,8 +104,8 @@ public final class Migrator
     private static boolean checkDBExists(final BasicDataSource dbSource, final String dbName) throws SQLException
     {
         try (
-                final Connection c = dbSource.getConnection();
-                final Statement statement = c.createStatement()
+            final Connection connection = dbSource.getConnection();
+            final Statement statement = connection.createStatement()
         ) {
             final boolean exists = statement.executeQuery("SELECT * FROM pg_database WHERE datname=lower('" + dbName + "');").next();
             LOGGER.info("Database {} exists: {}", dbName, exists);
@@ -110,11 +113,14 @@ public final class Migrator
         }
     }
 
-    public static void main(String[] args)
+    private static String checkAndConvertConnectionUrl(final String connectionUrl) throws FlywayMigratorException
     {
-        String str = "jdbc:postgresql://jobservice-integrationtests-postgres:5432/";
-
-        System.out.println(str.substring(0, str.lastIndexOf("/")+1));
+        final String connectionUrlWithSlashes = connectionUrl.replace("\\", "/");
+        final Matcher matcher = Pattern.compile(CONNECTION_URL_REGEX).matcher(connectionUrlWithSlashes);
+        if (!matcher.find()) {
+            throw new FlywayMigratorException("The connectionString is invalid: " + connectionUrl +
+                    ". Here is an example of a valid format: jdbc:postgresql://localhost:3307/");
+        }
+        return matcher.group(0);
     }
-
 }
