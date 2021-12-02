@@ -67,9 +67,8 @@ public final class Migrator
             }
 
             LOGGER.info("About to perform DB update.");
-            System.out.println("db url "+dbSource.getUrl());
             final Flyway flyway = Flyway.configure()
-                    .dataSource(dbSource.getUrl(), username, password)
+                    .dataSource(dbSource.getUrl()+dbName, username, password)
                     .baselineOnMigrate(true)
                     .load();
             flyway.migrate();
