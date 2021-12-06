@@ -63,9 +63,7 @@ public final class Migrator
 
             final boolean exists = checkDBExists(dbSource, dbName);
             LOGGER.debug("Database exists: {}", exists);
-            if (exists && !allowDBDeletion) {
-                LOGGER.info("Migration cancelled. The Database {} exists and deletion has not been enabled.", dbName);
-            }
+
             if (!exists || allowDBDeletion) {
                 resetOrCreateDatabase(dbSource, exists, dbName);
             }
