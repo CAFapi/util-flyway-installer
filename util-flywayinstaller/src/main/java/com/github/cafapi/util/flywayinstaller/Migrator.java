@@ -63,7 +63,6 @@ public final class Migrator
 
             final boolean exists = checkDBExists(dbSource, dbName);
             LOGGER.debug("Database exists: {}", exists);
-
             if (!exists || allowDBDeletion) {
                 resetOrCreateDatabase(dbSource, exists, dbName);
             }
@@ -74,7 +73,6 @@ public final class Migrator
                     .validateMigrationNaming(true)
                     .baselineOnMigrate(true)
                     .load();
-            flyway.validate();
             flyway.migrate();
             LOGGER.info("DB update finished.");
         } catch (final SQLException e) {
