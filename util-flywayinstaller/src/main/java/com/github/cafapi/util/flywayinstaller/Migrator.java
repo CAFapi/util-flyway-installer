@@ -70,10 +70,10 @@ public final class Migrator
             LOGGER.info("About to perform DB update.");
             final Flyway flyway = Flyway.configure()
                     .dataSource(dbSource.getUrl() + dbName, username, password)
-                    .validateMigrationNaming(true)
                     .baselineOnMigrate(true)
                     .load();
             flyway.migrate();
+            flyway.validate();
             LOGGER.info("DB update finished.");
         } catch (final SQLException e) {
             throw new FlywayMigratorException("Issue while trying to perform the migration.", e);
