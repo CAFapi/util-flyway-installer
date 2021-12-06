@@ -36,6 +36,7 @@ public final class Migrator
 {
     private static final Logger LOGGER = LoggerFactory.getLogger(Migrator.class);
     private static final String CONNECTION_URL_REGEX = "^.*\\/\\/.+:\\d+\\/";
+
     private Migrator()
     {
     }
@@ -62,15 +63,20 @@ public final class Migrator
 
             final boolean exists = checkDBExists(dbSource, dbName);
             LOGGER.debug("Database exists: {}", exists);
+            if (exists && !allowDBDeletion) {
+                LOGGER.info("Migration cancelled. The Database {} exists and deletion has not been enabled.", dbName);
+            }
             if (!exists || allowDBDeletion) {
                 resetOrCreateDatabase(dbSource, exists, dbName);
             }
 
             LOGGER.info("About to perform DB update.");
             final Flyway flyway = Flyway.configure()
-                    .dataSource(dbSource.getUrl()+dbName, username, password)
+                    .dataSource(dbSource.getUrl() + dbName, username, password)
+                    .validateMigrationNaming(true)
                     .baselineOnMigrate(true)
                     .load();
+            flyway.validate();
             flyway.migrate();
             LOGGER.info("DB update finished.");
         } catch (final SQLException e) {
@@ -81,7 +87,7 @@ public final class Migrator
 
     private static void setLogLevel(final LogLevel logLevel)
     {
-        final LoggerContext loggerContext = (LoggerContext) LoggerFactory.getILoggerFactory();
+        final LoggerContext loggerContext = (LoggerContext)LoggerFactory.getILoggerFactory();
         loggerContext.getLoggerList().forEach(tmpLogger -> tmpLogger.setLevel(Level.toLevel(logLevel.name())));
         LOGGER.debug("Log level set to {}.", logLevel);
     }
@@ -92,14 +98,14 @@ public final class Migrator
             final String dbName) throws SQLException
     {
         final String savedUrl = dbSource.getUrl();
-        dbSource.setUrl(dbSource.getUrl()+"postgres");
+        dbSource.setUrl(dbSource.getUrl() + "postgres");
         LOGGER.debug(dbSource.getUrl());
         try (final Connection connection = dbSource.getConnection();
              final Statement statement = connection.createStatement()
         ) {
             if (exists) {
                 LOGGER.info("force deletion has been specified.\nDeleting database {}", dbName);
-                statement.executeUpdate("DROP DATABASE " + dbName );
+                statement.executeUpdate("DROP DATABASE " + dbName);
                 LOGGER.info("DELETED database: {}", dbName);
             }
             statement.executeUpdate("CREATE DATABASE " + dbName);
@@ -111,8 +117,8 @@ public final class Migrator
     private static boolean checkDBExists(final BasicDataSource dbSource, final String dbName) throws SQLException
     {
         try (
-            final Connection connection = dbSource.getConnection();
-            final Statement statement = connection.createStatement()
+                final Connection connection = dbSource.getConnection();
+                final Statement statement = connection.createStatement()
         ) {
             final boolean exists = statement.executeQuery("SELECT * FROM pg_database WHERE datname=lower('" + dbName + "');").next();
             LOGGER.info("Database {} exists: {}", dbName, exists);

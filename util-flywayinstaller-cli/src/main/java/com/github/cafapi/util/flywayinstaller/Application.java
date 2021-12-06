@@ -36,6 +36,7 @@ public final class Application implements Callable<Integer>
             description = "Enables the deletion of existing database for a fresh install."
     )
     private boolean allowDBDeletion;
+
     @CommandLine.Option(
             names = {"-db.connection"},
             paramLabel = "<connectionString>",
