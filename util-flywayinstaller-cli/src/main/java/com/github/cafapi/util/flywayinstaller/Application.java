@@ -76,7 +76,6 @@ public final class Application implements Callable<Integer>
         names = {"-db.name"},
         paramLabel = "<dbName>",
         required = true,
-        defaultValue = "",
         description = "Specifies the name of the database to be created or updated."
     )
     private String dbName;
