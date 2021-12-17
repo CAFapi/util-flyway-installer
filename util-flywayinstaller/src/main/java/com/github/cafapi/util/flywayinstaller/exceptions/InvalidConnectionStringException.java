@@ -15,22 +15,11 @@
  */
 package com.github.cafapi.util.flywayinstaller.exceptions;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-public class FlywayMigratorException extends Exception
+public final class InvalidConnectionStringException extends Exception
 {
-    private static final Logger LOGGER = LoggerFactory.getLogger(FlywayMigratorException.class);
-
-    public FlywayMigratorException(final String exceptionDetails)
+    public InvalidConnectionStringException(final String connectionString)
     {
-        super(exceptionDetails);
-        LOGGER.error(exceptionDetails);
-    }
-
-    public FlywayMigratorException(final String exceptionDetails, final Exception exception)
-    {
-        super(exceptionDetails);
-        LOGGER.error("{} \\\\ {}", exceptionDetails, exception.getMessage());
+        super("The connectionString is invalid: " + connectionString
+            + ". Here is an example of a valid format: jdbc:postgresql://localhost:3307/");
     }
 }

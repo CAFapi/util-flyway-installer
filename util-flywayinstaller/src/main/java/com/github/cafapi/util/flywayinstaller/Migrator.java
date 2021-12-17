@@ -15,7 +15,7 @@
  */
 package com.github.cafapi.util.flywayinstaller;
 
-import com.github.cafapi.util.flywayinstaller.exceptions.FlywayMigratorException;
+import com.github.cafapi.util.flywayinstaller.exceptions.InvalidConnectionStringException;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.sql.Statement;
@@ -41,7 +41,7 @@ public final class Migrator
         final String dbName,
         final String username,
         final String password
-    ) throws FlywayMigratorException
+    ) throws InvalidConnectionStringException, SQLException
     {
         LOGGER.debug("Arguments received"
             + " allowDBDeletion: {}\n"
@@ -70,8 +70,6 @@ public final class Migrator
             flyway.migrate();
             flyway.validate();
             LOGGER.info("DB update finished.");
-        } catch (final SQLException e) {
-            throw new FlywayMigratorException("Issue while trying to perform the migration.", e);
         }
         LOGGER.info("Migration completed ...");
     }
@@ -107,13 +105,12 @@ public final class Migrator
         }
     }
 
-    private static String checkAndConvertConnectionUrl(final String connectionUrl) throws FlywayMigratorException
+    private static String checkAndConvertConnectionUrl(final String connectionUrl) throws InvalidConnectionStringException
     {
         final String connectionUrlWithSlashes = connectionUrl.replace("\\", "/");
         final Matcher matcher = Pattern.compile(CONNECTION_URL_REGEX).matcher(connectionUrlWithSlashes);
         if (!matcher.find()) {
-            throw new FlywayMigratorException("The connectionString is invalid: " + connectionUrl
-                + ". Here is an example of a valid format: jdbc:postgresql://localhost:3307/");
+            throw new InvalidConnectionStringException(connectionUrl);
         }
         return matcher.group(0);
     }

@@ -17,13 +17,20 @@ package com.github.cafapi.util.flywayinstaller;
 
 import ch.qos.logback.classic.Level;
 import ch.qos.logback.classic.LoggerContext;
-import com.github.cafapi.util.flywayinstaller.exceptions.FlywayMigratorException;
+import com.github.cafapi.util.flywayinstaller.exceptions.InvalidConnectionStringException;
+import java.sql.SQLException;
 import java.util.concurrent.Callable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import picocli.CommandLine;
 
-@CommandLine.Command(mixinStandardHelpOptions = true, name = "util-flywayinstaller")
+@CommandLine.Command(
+    name = "util-flywayinstaller",
+    mixinStandardHelpOptions = true,
+    exitCodeListHeading = "%nExit Codes:%n",
+    exitCodeList = {" 0:Successful program execution.",
+                    " 1:Invalid input: An invalid parameter was specified.",
+                    " 2:Execution exception: An exception occurred while executing the migrations."})
 public final class Application implements Callable<Integer>
 {
     private static final Logger LOGGER = LoggerFactory.getLogger(Application.class);
@@ -96,8 +103,12 @@ public final class Application implements Callable<Integer>
 
         try {
             Migrator.migrate(allowDBDeletion, connectionString, dbName, username, password);
-        } catch (final FlywayMigratorException e) {
+        } catch (final InvalidConnectionStringException ex) {
+            LOGGER.error(ex.getMessage());
             return 1;
+        } catch (final SQLException ex) {
+            LOGGER.error("Issue while trying to perform the migration.", ex);
+            return 2;
         }
         return 0;
     }
