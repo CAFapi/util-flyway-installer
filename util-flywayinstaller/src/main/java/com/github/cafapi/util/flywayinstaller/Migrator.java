@@ -31,7 +31,6 @@ import com.github.cafapi.util.flywayinstaller.exceptions.FlywayMigratorException
 import ch.qos.logback.classic.Level;
 import ch.qos.logback.classic.LoggerContext;
 
-
 public final class Migrator
 {
     private static final Logger LOGGER = LoggerFactory.getLogger(Migrator.class);
@@ -41,20 +40,25 @@ public final class Migrator
     {
     }
 
-    public static void migrate(final boolean allowDBDeletion,
-                               final String connectionString,
-                               final String dbName,
-                               final String username,
-                               final String password,
-                               final LogLevel logLevel) throws FlywayMigratorException
+    public static void migrate(
+        final boolean allowDBDeletion,
+        final String connectionString,
+        final String dbName,
+        final String username,
+        final String password,
+        final LogLevel logLevel
+    ) throws FlywayMigratorException
     {
         setLogLevel(logLevel);
-        LOGGER.debug("Arguments received allowDBDeletion: {}\n connectionString: {}\n dbName: {}" +
-                        "\n username: {}\n password: {}\n logLevel: {}",
-                allowDBDeletion,
-                connectionString,
-                dbName, username,
-                password, logLevel);
+
+        LOGGER.debug("Arguments received"
+            + " allowDBDeletion: {}\n"
+            + " connectionString: {}\n"
+            + " dbName: {}\n"
+            + " username: {}\n"
+            + " password: {}\n"
+            + " logLevel: {}", allowDBDeletion, connectionString, dbName, username, password, logLevel);
+
         LOGGER.info("Starting migration ...");
         try (final BasicDataSource dbSource = new BasicDataSource()) {
             dbSource.setUrl(checkAndConvertConnectionUrl(connectionString));
@@ -69,9 +73,9 @@ public final class Migrator
 
             LOGGER.info("About to perform DB update.");
             final Flyway flyway = Flyway.configure()
-                    .dataSource(dbSource.getUrl() + dbName, username, password)
-                    .baselineOnMigrate(true)
-                    .load();
+                .dataSource(dbSource.getUrl() + dbName, username, password)
+                .baselineOnMigrate(true)
+                .load();
             flyway.migrate();
             flyway.validate();
             LOGGER.info("DB update finished.");
@@ -83,22 +87,21 @@ public final class Migrator
 
     private static void setLogLevel(final LogLevel logLevel)
     {
-        final LoggerContext loggerContext = (LoggerContext)LoggerFactory.getILoggerFactory();
+        final LoggerContext loggerContext = (LoggerContext) LoggerFactory.getILoggerFactory();
         loggerContext.getLoggerList().forEach(tmpLogger -> tmpLogger.setLevel(Level.toLevel(logLevel.name())));
         LOGGER.debug("Log level set to {}.", logLevel);
     }
 
     private static void resetOrCreateDatabase(
-            final BasicDataSource dbSource,
-            final boolean exists,
-            final String dbName) throws SQLException
+        final BasicDataSource dbSource,
+        final boolean exists,
+        final String dbName) throws SQLException
     {
         final String savedUrl = dbSource.getUrl();
         dbSource.setUrl(dbSource.getUrl() + "postgres");
         LOGGER.debug(dbSource.getUrl());
         try (final Connection connection = dbSource.getConnection();
-             final Statement statement = connection.createStatement()
-        ) {
+             final Statement statement = connection.createStatement()) {
             if (exists) {
                 LOGGER.info("force deletion has been specified.\nDeleting database {}", dbName);
                 statement.executeUpdate("DROP DATABASE " + dbName);
@@ -112,10 +115,8 @@ public final class Migrator
 
     private static boolean checkDBExists(final BasicDataSource dbSource, final String dbName) throws SQLException
     {
-        try (
-                final Connection connection = dbSource.getConnection();
-                final Statement statement = connection.createStatement()
-        ) {
+        try (final Connection connection = dbSource.getConnection();
+             final Statement statement = connection.createStatement()) {
             final boolean exists = statement.executeQuery("SELECT * FROM pg_database WHERE datname=lower('" + dbName + "');").next();
             LOGGER.info("Database {} exists: {}", dbName, exists);
             return exists;
@@ -127,8 +128,8 @@ public final class Migrator
         final String connectionUrlWithSlashes = connectionUrl.replace("\\", "/");
         final Matcher matcher = Pattern.compile(CONNECTION_URL_REGEX).matcher(connectionUrlWithSlashes);
         if (!matcher.find()) {
-            throw new FlywayMigratorException("The connectionString is invalid: " + connectionUrl +
-                    ". Here is an example of a valid format: jdbc:postgresql://localhost:3307/");
+            throw new FlywayMigratorException("The connectionString is invalid: " + connectionUrl
+                + ". Here is an example of a valid format: jdbc:postgresql://localhost:3307/");
         }
         return matcher.group(0);
     }

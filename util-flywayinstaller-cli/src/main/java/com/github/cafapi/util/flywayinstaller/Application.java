@@ -30,52 +30,52 @@ public final class Application implements Callable<Integer>
     }
 
     @CommandLine.Option(
-            names = {"-fd"},
-            paramLabel = "<allowDBDeletion>",
-            defaultValue = "false",
-            description = "Enables the deletion of existing database for a fresh install."
+        names = {"-fd"},
+        paramLabel = "<allowDBDeletion>",
+        defaultValue = "false",
+        description = "Enables the deletion of existing database for a fresh install."
     )
     private boolean allowDBDeletion;
 
     @CommandLine.Option(
-            names = {"-db.connection"},
-            paramLabel = "<connectionString>",
-            required = true,
-            description = "Specifies the connection string to the database service. " +
-                    "e.g. jdbc:postgresql://localhost:3307/"
+        names = {"-db.connection"},
+        paramLabel = "<connectionString>",
+        required = true,
+        description = "Specifies the connection string to the database service. "
+        + "e.g. jdbc:postgresql://localhost:3307/"
     )
     private String connectionString;
 
     @CommandLine.Option(
-            names = {"-db.user"},
-            paramLabel = "<username>",
-            required = true,
-            description = "Specifies the username to access the database."
+        names = {"-db.user"},
+        paramLabel = "<username>",
+        required = true,
+        description = "Specifies the username to access the database."
     )
     private String username;
 
     @CommandLine.Option(
-            names = {"-db.pass"},
-            paramLabel = "<password>",
-            required = true,
-            description = "Specifies the password to access the database."
+        names = {"-db.pass"},
+        paramLabel = "<password>",
+        required = true,
+        description = "Specifies the password to access the database."
     )
     private String password;
 
     @CommandLine.Option(
-            names = {"-db.name"},
-            paramLabel = "<dbName>",
-            required = true,
-            defaultValue = "",
-            description = "Specifies the name of the database to be created or updated."
+        names = {"-db.name"},
+        paramLabel = "<dbName>",
+        required = true,
+        defaultValue = "",
+        description = "Specifies the name of the database to be created or updated."
     )
     private String dbName;
 
     @CommandLine.Option(
-            names = {"-log"},
-            paramLabel = "<logLevel>",
-            defaultValue = "INFO",
-            description = "Specifies the logging level of the installer. Can be DEBUG, INFO, WARNING or ERROR."
+        names = {"-log"},
+        paramLabel = "<logLevel>",
+        defaultValue = "INFO",
+        description = "Specifies the logging level of the installer. Can be DEBUG, INFO, WARNING or ERROR."
     )
     private LogLevel logLevel;
 

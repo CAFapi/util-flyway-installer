@@ -25,17 +25,17 @@
         <module>util-flywayinstaller-cli</module>
         <module>util-flywayinstaller</module>
     </modules>
-    
+
     <parent>
         <groupId>com.github.cafapi</groupId>
         <artifactId>caf-common-parent</artifactId>
         <version>2.4.0-254</version>
     </parent>
-    
+
     <groupId>com.github.cafapi.util.flywayinstaller</groupId>
     <artifactId>util-flywayinstaller-aggregator</artifactId>
     <version>1.0.0-SNAPSHOT</version>
-    
+
     <inceptionYear>2021</inceptionYear>
 
     <properties>
@@ -46,7 +46,7 @@
         <enforceBannedDependencies>true</enforceBannedDependencies>
         <slf4j.version>1.7.30</slf4j.version>
     </properties>
-    
+
     <dependencyManagement>
         <dependencies>
             <dependency>
@@ -108,5 +108,5 @@
             </dependency>
         </dependencies>
     </dependencyManagement>
-    
+
 </project>
