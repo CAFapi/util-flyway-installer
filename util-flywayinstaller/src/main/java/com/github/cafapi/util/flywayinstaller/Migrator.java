@@ -15,8 +15,6 @@
  */
 package com.github.cafapi.util.flywayinstaller;
 
-import ch.qos.logback.classic.Level;
-import ch.qos.logback.classic.LoggerContext;
 import com.github.cafapi.util.flywayinstaller.exceptions.FlywayMigratorException;
 import java.sql.Connection;
 import java.sql.SQLException;
@@ -42,19 +40,15 @@ public final class Migrator
         final String connectionString,
         final String dbName,
         final String username,
-        final String password,
-        final LogLevel logLevel
+        final String password
     ) throws FlywayMigratorException
     {
-        setLogLevel(logLevel);
-
         LOGGER.debug("Arguments received"
             + " allowDBDeletion: {}\n"
             + " connectionString: {}\n"
             + " dbName: {}\n"
             + " username: {}\n"
-            + " password: {}\n"
-            + " logLevel: {}", allowDBDeletion, connectionString, dbName, username, password, logLevel);
+            + " password: {}", allowDBDeletion, connectionString, dbName, username, password);
 
         LOGGER.info("Starting migration ...");
         try (final BasicDataSource dbSource = new BasicDataSource()) {
@@ -80,13 +74,6 @@ public final class Migrator
             throw new FlywayMigratorException("Issue while trying to perform the migration.", e);
         }
         LOGGER.info("Migration completed ...");
-    }
-
-    private static void setLogLevel(final LogLevel logLevel)
-    {
-        final LoggerContext loggerContext = (LoggerContext) LoggerFactory.getILoggerFactory();
-        loggerContext.getLoggerList().forEach(tmpLogger -> tmpLogger.setLevel(Level.toLevel(logLevel.name())));
-        LOGGER.debug("Log level set to {}.", logLevel);
     }
 
     private static void resetOrCreateDatabase(

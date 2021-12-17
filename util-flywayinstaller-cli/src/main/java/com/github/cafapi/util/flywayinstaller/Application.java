@@ -15,13 +15,18 @@
  */
 package com.github.cafapi.util.flywayinstaller;
 
+import ch.qos.logback.classic.Level;
+import ch.qos.logback.classic.LoggerContext;
 import com.github.cafapi.util.flywayinstaller.exceptions.FlywayMigratorException;
 import java.util.concurrent.Callable;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import picocli.CommandLine;
 
 @CommandLine.Command(mixinStandardHelpOptions = true, name = "util-flywayinstaller")
 public final class Application implements Callable<Integer>
 {
+    private static final Logger LOGGER = LoggerFactory.getLogger(Application.class);
 
     private Application()
     {
@@ -72,7 +77,6 @@ public final class Application implements Callable<Integer>
     @CommandLine.Option(
         names = {"-log"},
         paramLabel = "<logLevel>",
-        defaultValue = "INFO",
         description = "Specifies the logging level of the installer. Can be DEBUG, INFO, WARNING or ERROR."
     )
     private LogLevel logLevel;
@@ -86,11 +90,22 @@ public final class Application implements Callable<Integer>
     @Override
     public Integer call()
     {
+        if (logLevel != null) {
+            setLogLevel(logLevel);
+        }
+
         try {
-            Migrator.migrate(allowDBDeletion, connectionString, dbName, username, password, logLevel);
+            Migrator.migrate(allowDBDeletion, connectionString, dbName, username, password);
         } catch (final FlywayMigratorException e) {
             return 1;
         }
         return 0;
+    }
+
+    private static void setLogLevel(final LogLevel logLevel)
+    {
+        final LoggerContext loggerContext = (LoggerContext) LoggerFactory.getILoggerFactory();
+        loggerContext.getLoggerList().forEach(tmpLogger -> tmpLogger.setLevel(Level.toLevel(logLevel.name())));
+        LOGGER.debug("Log level set to {}.", logLevel);
     }
 }
