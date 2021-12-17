@@ -15,10 +15,8 @@
  */
 package com.github.cafapi.util.flywayinstaller;
 
-import java.util.concurrent.Callable;
-
 import com.github.cafapi.util.flywayinstaller.exceptions.FlywayMigratorException;
-
+import java.util.concurrent.Callable;
 import picocli.CommandLine;
 
 @CommandLine.Command(mixinStandardHelpOptions = true, name = "util-flywayinstaller")

@@ -15,21 +15,18 @@
  */
 package com.github.cafapi.util.flywayinstaller;
 
+import ch.qos.logback.classic.Level;
+import ch.qos.logback.classic.LoggerContext;
+import com.github.cafapi.util.flywayinstaller.exceptions.FlywayMigratorException;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-
 import org.apache.commons.dbcp2.BasicDataSource;
 import org.flywaydb.core.Flyway;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import com.github.cafapi.util.flywayinstaller.exceptions.FlywayMigratorException;
-
-import ch.qos.logback.classic.Level;
-import ch.qos.logback.classic.LoggerContext;
 
 public final class Migrator
 {
