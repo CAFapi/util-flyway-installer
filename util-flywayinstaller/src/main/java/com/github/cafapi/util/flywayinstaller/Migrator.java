@@ -19,6 +19,7 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Statement;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -33,37 +34,36 @@ public final class Migrator
 {
     private static final Logger LOGGER = LoggerFactory.getLogger(Migrator.class);
     private static final String CONNECTION_URL_REGEX = "^.*\\/\\/.+:\\d+\\/";
-    private static final String DROP_DATABASE = "DROP DATABASE ?";
-    private static final String CREATE_DATABASE = "CREATE DATABASE ?";
+    private static final String CREATE_DATABASE = "CREATE DATABASE \"%s\"";
     private static final String DOES_DATABASE_EXIST =
-            "SELECT EXISTS (SELECT datname FROM pg_catalog.pg_database WHERE lower(datname) = lower(?));";
+            "SELECT EXISTS (SELECT datname FROM pg_catalog.pg_database WHERE lower(datname) = lower( ? ));";
 
     private Migrator()
     {
     }
 
     public static void migrate(
-        final boolean allowDBDeletion,
         final String connectionString,
         final String dbName,
         final String username,
         final String password
     ) throws InvalidConnectionStringException, SQLException
     {
-        logReceivedArgumentsIfDebug(allowDBDeletion, connectionString, dbName, username, password);
+        logReceivedArgumentsIfDebug(connectionString, dbName, username, password);
 
         LOGGER.info("Starting migration ...");
 
         try  {
             final PGSimpleDataSource dbSource = new PGSimpleDataSource();
-            dbSource.setUrl(checkAndConvertConnectionUrl(connectionString));
+            final String afterConversion = checkAndConvertConnectionUrl(connectionString);
+            dbSource.setUrl(afterConversion);
             dbSource.setUser(username);
             dbSource.setPassword(password);
+            LOGGER.debug("url after conversion {}", dbSource.getUrl());
 
-            final boolean exists = checkDBExists(dbSource, dbName);
-            LOGGER.debug("Database exists: {}", exists);
-            if (!exists || allowDBDeletion) {
-                resetOrCreateDatabase(dbSource, exists, dbName);
+            if (!doesDbExist(dbSource, dbName)) {
+                LOGGER.debug("reset or createDB");
+                resetOrCreateDatabase(dbSource, dbName);
             }
 
             LOGGER.info("About to perform DB update.");
@@ -82,31 +82,29 @@ public final class Migrator
 
     private static void resetOrCreateDatabase(
         final PGSimpleDataSource dbSource,
-        final boolean exists,
         final String dbName) throws SQLException
     {
-        final String savedUrl = dbSource.getUrl();
-        dbSource.setUrl(dbSource.getUrl() + "postgres");
-        LOGGER.debug(dbSource.getUrl());
+        //final String savedUrl = dbSource.getUrl();
+       // dbSource.setUrl(dbSource.getUrl() + "postgres");
+        LOGGER.debug("getting url {}", dbSource.getUrl());
 
         try (final Connection connection = dbSource.getConnection();
-             final PreparedStatement deleteStatement = connection.prepareStatement(DROP_DATABASE);
-             final PreparedStatement createStatement = connection.prepareStatement(CREATE_DATABASE);
+             final Statement statement = connection.createStatement();
         ) {
-            if (exists) {
+           /* if (exists) {
                 LOGGER.info("force deletion has been specified.\nDeleting database {}", dbName);
-                deleteStatement.setString(1, dbName);
-                deleteStatement.executeUpdate();
+                String str = String.format(DROP_DATABASE, dbName);
+                System.out.println("statement to execute "+str);
+                statement.executeUpdate(str);
                 LOGGER.info("DELETED database: {}", dbName);
-            }
-            createStatement.setString(1, dbName);
-            createStatement.executeUpdate();
+            }*/
+            statement.executeUpdate(String.format(CREATE_DATABASE, dbName));
             LOGGER.info("Created new database: {}", dbName);
         }
-        dbSource.setUrl(savedUrl);
+     //   dbSource.setUrl(savedUrl);
     }
 
-    private static boolean checkDBExists(final PGSimpleDataSource dbSource, final String dbName) throws SQLException
+    private static boolean doesDbExist(final PGSimpleDataSource dbSource, final String dbName) throws SQLException
     {
         try (final Connection connection = dbSource.getConnection();
              final PreparedStatement statement = connection.prepareStatement(DOES_DATABASE_EXIST)) {
@@ -116,6 +114,14 @@ public final class Migrator
             return set.getBoolean(1);
         }
     }
+/*
+    public static void main(String[] args) throws InvalidConnectionStringException
+    {
+        final String str = "jdbc:postgresql://localhost:5437/?adaptiveFetch=false&adaptiveFetchMaximum=-1&adaptiveFetchMinimum=0" +
+                "&allowEncodingChanges=false&ApplicationName=PostgreSQL+JDBC+Driver&autosave=never&binaryTransfer=true&binaryTransferDisable=&binaryTransferEnable=&cancelSignalTimeout=10&cleanupSavepoints=false&connectTimeout=10&databaseMetadataCacheFields=65536&databaseMetadataCacheFieldsMiB=5&defaultRowFetchSize=0&disableColumnSanitiser=false&escapeSyntaxCallMode=select&gssEncMode=allow&gsslib=auto&hideUnprivilegedObjects=false&hostRecheckSeconds=10&jaasLogin=true&loadBalanceHosts=false&loginTimeout=0&logServerErrorDetail=true&logUnclosedConnections=false&preferQueryMode=extended&preparedStatementCacheQueries=256&preparedStatementCacheSizeMiB=5&prepareThreshold=5&quoteReturningIdentifiers=true&readOnly=false&readOnlyMode=transaction&receiveBufferSize=-1&reWriteBatchedInserts=false&sendBufferSize=-1&socketTimeout=0&sspiServiceClass=POSTGRES&targetServerType=any&tcpKeepAlive=false&unknownLength=2147483647&useSpnego=false&xmlFactoryFactory=";
+
+        System.out.println("new String " + checkAndConvertConnectionUrl(str));
+    }*/
 
     private static String checkAndConvertConnectionUrl(final String connectionUrl) throws InvalidConnectionStringException
     {
@@ -127,17 +133,16 @@ public final class Migrator
         return matcher.group(0);
     }
 
-    private static void logReceivedArgumentsIfDebug(final boolean allowDBDeletion,
-                                                    final String connectionString,
+    private static void logReceivedArgumentsIfDebug(final String connectionString,
                                                     final String dbName,
                                                     final String username,
                                                     final String password)
     {
         LOGGER.debug("Arguments received"
-                + " allowDBDeletion: {}\n"
-                + " connectionString: {}\n"
-                + " dbName: {}\n"
-                + " username: {}\n"
-                + " password: {}", allowDBDeletion, connectionString, dbName, username, password);
+                + " connectionString: {}"
+                + " dbName: {}"
+                + " username: {}"
+                + " password: {}", connectionString, dbName, username, password);
+
     }
 }

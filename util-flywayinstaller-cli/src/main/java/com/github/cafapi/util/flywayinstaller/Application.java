@@ -40,14 +40,6 @@ public final class Application implements Callable<Integer>
     }
 
     @CommandLine.Option(
-        names = {"-fd"},
-        paramLabel = "<allowDBDeletion>",
-        defaultValue = "false",
-        description = "Enables the deletion of existing database for a fresh install."
-    )
-    private boolean allowDBDeletion;
-
-    @CommandLine.Option(
         names = {"-db.connection"},
         paramLabel = "<connectionString>",
         required = true,
@@ -101,7 +93,7 @@ public final class Application implements Callable<Integer>
         }
 
         try {
-            Migrator.migrate(allowDBDeletion, connectionString, dbName, username, password);
+            Migrator.migrate(connectionString, dbName, username, password);
         } catch (final InvalidConnectionStringException ex) {
             LOGGER.error(ex.getMessage());
             return 1;
