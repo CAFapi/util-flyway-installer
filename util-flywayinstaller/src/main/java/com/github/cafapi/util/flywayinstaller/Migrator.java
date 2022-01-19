@@ -1,5 +1,5 @@
 /*
- * Copyright 2021 Micro Focus or one of its affiliates.
+ * Copyright 2022 Micro Focus or one of its affiliates.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,21 +15,28 @@
  */
 package com.github.cafapi.util.flywayinstaller;
 
-import com.github.cafapi.util.flywayinstaller.exceptions.InvalidConnectionStringException;
 import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.sql.Statement;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import org.apache.commons.dbcp2.BasicDataSource;
+
 import org.flywaydb.core.Flyway;
+import org.postgresql.ds.PGSimpleDataSource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import com.github.cafapi.util.flywayinstaller.exceptions.InvalidConnectionStringException;
 
 public final class Migrator
 {
     private static final Logger LOGGER = LoggerFactory.getLogger(Migrator.class);
     private static final String CONNECTION_URL_REGEX = "^.*\\/\\/.+:\\d+\\/";
+    private static final String DROP_DATABASE = "DROP DATABASE ?";
+    private static final String CREATE_DATABASE = "CREATE DATABASE ?";
+    private static final String DOES_DATABASE_EXIST =
+            "SELECT EXISTS (SELECT datname FROM pg_catalog.pg_database WHERE lower(datname) = lower(?));";
 
     private Migrator()
     {
@@ -43,17 +50,14 @@ public final class Migrator
         final String password
     ) throws InvalidConnectionStringException, SQLException
     {
-        LOGGER.debug("Arguments received"
-            + " allowDBDeletion: {}\n"
-            + " connectionString: {}\n"
-            + " dbName: {}\n"
-            + " username: {}\n"
-            + " password: {}", allowDBDeletion, connectionString, dbName, username, password);
+        logReceivedArgumentsIfDebug(allowDBDeletion, connectionString, dbName, username, password);
 
         LOGGER.info("Starting migration ...");
-        try (final BasicDataSource dbSource = new BasicDataSource()) {
+
+        try  {
+            final PGSimpleDataSource dbSource = new PGSimpleDataSource();
             dbSource.setUrl(checkAndConvertConnectionUrl(connectionString));
-            dbSource.setUsername(username);
+            dbSource.setUser(username);
             dbSource.setPassword(password);
 
             final boolean exists = checkDBExists(dbSource, dbName);
@@ -64,44 +68,52 @@ public final class Migrator
 
             LOGGER.info("About to perform DB update.");
             final Flyway flyway = Flyway.configure()
-                .dataSource(dbSource.getUrl() + dbName, username, password)
-                .baselineOnMigrate(true)
-                .load();
+                    .dataSource(dbSource)
+                    .baselineOnMigrate(true)
+                    .load();
             flyway.migrate();
             flyway.validate();
             LOGGER.info("DB update finished.");
+        } catch (final Exception e) {
+            LOGGER.error(e.getMessage(), e);
         }
         LOGGER.info("Migration completed ...");
     }
 
     private static void resetOrCreateDatabase(
-        final BasicDataSource dbSource,
+        final PGSimpleDataSource dbSource,
         final boolean exists,
         final String dbName) throws SQLException
     {
         final String savedUrl = dbSource.getUrl();
         dbSource.setUrl(dbSource.getUrl() + "postgres");
         LOGGER.debug(dbSource.getUrl());
+
         try (final Connection connection = dbSource.getConnection();
-             final Statement statement = connection.createStatement()) {
+             final PreparedStatement deleteStatement = connection.prepareStatement(DROP_DATABASE);
+             final PreparedStatement createStatement = connection.prepareStatement(CREATE_DATABASE);
+        ) {
             if (exists) {
                 LOGGER.info("force deletion has been specified.\nDeleting database {}", dbName);
-                statement.executeUpdate("DROP DATABASE " + dbName);
+                deleteStatement.setString(1, dbName);
+                deleteStatement.executeUpdate();
                 LOGGER.info("DELETED database: {}", dbName);
             }
-            statement.executeUpdate("CREATE DATABASE " + dbName);
+            createStatement.setString(1, dbName);
+            createStatement.executeUpdate();
             LOGGER.info("Created new database: {}", dbName);
         }
         dbSource.setUrl(savedUrl);
     }
 
-    private static boolean checkDBExists(final BasicDataSource dbSource, final String dbName) throws SQLException
+    private static boolean checkDBExists(final PGSimpleDataSource dbSource, final String dbName) throws SQLException
     {
         try (final Connection connection = dbSource.getConnection();
-             final Statement statement = connection.createStatement()) {
-            final boolean exists = statement.executeQuery("SELECT * FROM pg_database WHERE datname=lower('" + dbName + "');").next();
-            LOGGER.info("Database {} exists: {}", dbName, exists);
-            return exists;
+             final PreparedStatement statement = connection.prepareStatement(DOES_DATABASE_EXIST)) {
+            statement.setString(1, dbName);
+            final ResultSet set = statement.executeQuery();
+            set.next();
+            return set.getBoolean(1);
         }
     }
 
@@ -113,5 +125,19 @@ public final class Migrator
             throw new InvalidConnectionStringException(connectionUrl);
         }
         return matcher.group(0);
+    }
+
+    private static void logReceivedArgumentsIfDebug(final boolean allowDBDeletion,
+                                                    final String connectionString,
+                                                    final String dbName,
+                                                    final String username,
+                                                    final String password)
+    {
+        LOGGER.debug("Arguments received"
+                + " allowDBDeletion: {}\n"
+                + " connectionString: {}\n"
+                + " dbName: {}\n"
+                + " username: {}\n"
+                + " password: {}", allowDBDeletion, connectionString, dbName, username, password);
     }
 }
