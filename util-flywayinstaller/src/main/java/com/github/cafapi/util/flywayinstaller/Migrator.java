@@ -36,7 +36,7 @@ public final class Migrator
     private static final String CONNECTION_URL_REGEX = "^.*\\/\\/.+:\\d+\\/";
     private static final String CREATE_DATABASE = "CREATE DATABASE \"%s\"";
     private static final String DOES_DATABASE_EXIST =
-            "SELECT EXISTS (SELECT datname FROM pg_catalog.pg_database WHERE lower(datname) = lower( ? ));";
+            "SELECT EXISTS ( SELECT datname FROM pg_catalog.pg_database WHERE lower( datname ) = lower( ? ) );";
 
     private Migrator()
     {
@@ -59,7 +59,6 @@ public final class Migrator
             dbSource.setUrl(afterConversion);
             dbSource.setUser(username);
             dbSource.setPassword(password);
-            LOGGER.debug("url after conversion {}", dbSource.getUrl());
 
             if (!doesDbExist(dbSource, dbName)) {
                 LOGGER.debug("reset or createDB");
@@ -72,7 +71,6 @@ public final class Migrator
                     .baselineOnMigrate(true)
                     .load();
             flyway.migrate();
-            flyway.validate();
             LOGGER.info("DB update finished.");
         } catch (final Exception e) {
             LOGGER.error(e.getMessage(), e);
@@ -84,24 +82,12 @@ public final class Migrator
         final PGSimpleDataSource dbSource,
         final String dbName) throws SQLException
     {
-        //final String savedUrl = dbSource.getUrl();
-       // dbSource.setUrl(dbSource.getUrl() + "postgres");
-        LOGGER.debug("getting url {}", dbSource.getUrl());
-
         try (final Connection connection = dbSource.getConnection();
              final Statement statement = connection.createStatement();
         ) {
-           /* if (exists) {
-                LOGGER.info("force deletion has been specified.\nDeleting database {}", dbName);
-                String str = String.format(DROP_DATABASE, dbName);
-                System.out.println("statement to execute "+str);
-                statement.executeUpdate(str);
-                LOGGER.info("DELETED database: {}", dbName);
-            }*/
             statement.executeUpdate(String.format(CREATE_DATABASE, dbName));
             LOGGER.info("Created new database: {}", dbName);
         }
-     //   dbSource.setUrl(savedUrl);
     }
 
     private static boolean doesDbExist(final PGSimpleDataSource dbSource, final String dbName) throws SQLException
@@ -114,19 +100,17 @@ public final class Migrator
             return set.getBoolean(1);
         }
     }
-/*
-    public static void main(String[] args) throws InvalidConnectionStringException
-    {
-        final String str = "jdbc:postgresql://localhost:5437/?adaptiveFetch=false&adaptiveFetchMaximum=-1&adaptiveFetchMinimum=0" +
-                "&allowEncodingChanges=false&ApplicationName=PostgreSQL+JDBC+Driver&autosave=never&binaryTransfer=true&binaryTransferDisable=&binaryTransferEnable=&cancelSignalTimeout=10&cleanupSavepoints=false&connectTimeout=10&databaseMetadataCacheFields=65536&databaseMetadataCacheFieldsMiB=5&defaultRowFetchSize=0&disableColumnSanitiser=false&escapeSyntaxCallMode=select&gssEncMode=allow&gsslib=auto&hideUnprivilegedObjects=false&hostRecheckSeconds=10&jaasLogin=true&loadBalanceHosts=false&loginTimeout=0&logServerErrorDetail=true&logUnclosedConnections=false&preferQueryMode=extended&preparedStatementCacheQueries=256&preparedStatementCacheSizeMiB=5&prepareThreshold=5&quoteReturningIdentifiers=true&readOnly=false&readOnlyMode=transaction&receiveBufferSize=-1&reWriteBatchedInserts=false&sendBufferSize=-1&socketTimeout=0&sspiServiceClass=POSTGRES&targetServerType=any&tcpKeepAlive=false&unknownLength=2147483647&useSpnego=false&xmlFactoryFactory=";
 
-        System.out.println("new String " + checkAndConvertConnectionUrl(str));
-    }*/
-
+    /**
+     * We check the validity of the incoming connectionUrl then use the first section
+     * ex: jdbc:postgresql://localhost:5437/
+     * @param connectionUrl the connection url received
+     * @return the first section of the connectionUrl if valid
+     * @throws InvalidConnectionStringException
+     */
     private static String checkAndConvertConnectionUrl(final String connectionUrl) throws InvalidConnectionStringException
     {
-        final String connectionUrlWithSlashes = connectionUrl.replace("\\", "/");
-        final Matcher matcher = Pattern.compile(CONNECTION_URL_REGEX).matcher(connectionUrlWithSlashes);
+        final Matcher matcher = Pattern.compile(CONNECTION_URL_REGEX).matcher(connectionUrl);
         if (!matcher.find()) {
             throw new InvalidConnectionStringException(connectionUrl);
         }
