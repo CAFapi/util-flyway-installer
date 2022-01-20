@@ -75,7 +75,7 @@ public final class Application implements Callable<Integer>
     @CommandLine.Option(
         names = {"-log"},
         paramLabel = "<logLevel>",
-        description = "Specifies the logging level of the installer. Can be DEBUG, INFO, WARNING or ERROR."
+        description = "Specifies the logging level of the installer. Can be DEBUG, INFO, WARNING, ERROR or OFF. Must be Uppercase"
     )
     private LogLevel logLevel;
 
