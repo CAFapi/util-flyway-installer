@@ -55,8 +55,8 @@ public final class Migrator
 
         try  {
             final PGSimpleDataSource dbSource = new PGSimpleDataSource();
-            final String afterConversion = checkAndConvertConnectionUrl(connectionString);
-            dbSource.setUrl(afterConversion);
+            final String urlAfterConversion = checkAndConvertConnectionUrl(connectionString);
+            dbSource.setUrl(urlAfterConversion);
             dbSource.setUser(username);
             dbSource.setPassword(password);
 
@@ -64,6 +64,8 @@ public final class Migrator
                 LOGGER.debug("reset or createDB");
                 resetOrCreateDatabase(dbSource, dbName);
             }
+            // Update dbSource url to include the database name
+            dbSource.setUrl(urlAfterConversion + dbName);
 
             LOGGER.info("About to perform DB update.");
             final Flyway flyway = Flyway.configure()
