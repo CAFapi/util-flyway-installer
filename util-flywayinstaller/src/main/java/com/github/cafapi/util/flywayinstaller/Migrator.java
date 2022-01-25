@@ -15,6 +15,7 @@
  */
 package com.github.cafapi.util.flywayinstaller;
 
+import java.net.ConnectException;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -28,6 +29,7 @@ public final class Migrator
 {
     private static final Logger LOGGER = LoggerFactory.getLogger(Migrator.class);
     private static final String CREATE_DATABASE = "CREATE DATABASE \"%s\"";
+    private static final int CONNECTION_TIMEOUT_SECOND = 1;
     private static final String DOES_DATABASE_EXIST
         = "SELECT EXISTS (SELECT NULL FROM pg_catalog.pg_database WHERE lower( datname ) = lower( ? ));";
 
@@ -45,7 +47,7 @@ public final class Migrator
     {
         logReceivedArgumentsIfDebug(dbServer, dbPort, dbName, username, password);
 
-        LOGGER.info("Starting migration ...");
+        LOGGER.info("Checking connection ...");
 
         final PGSimpleDataSource dbSource = new PGSimpleDataSource();
         dbSource.setServerNames(new String[] {dbServer});
@@ -53,13 +55,16 @@ public final class Migrator
         dbSource.setUser(username);
         dbSource.setPassword(password);
 
-        if (!doesDbExist(dbSource, dbName)) {
-            LOGGER.debug("reset or createDB");
-            resetOrCreateDatabase(dbSource, dbName);
+        try(final Connection connection = dbSource.getConnection()){
+            if (!doesDbExist(connection, dbName)) {
+                LOGGER.debug("reset or createDB");
+                createDatabase(connection, dbName);
+            }
         }
+        LOGGER.info("Connection Ok. Starting migration ...");
+
         // Once we made sure that the database exists, we add the information in the dataSource
         dbSource.setDatabaseName(dbName);
-        LOGGER.info("About to perform DB update.");
 
         final Flyway flyway = Flyway.configure()
                 .dataSource(dbSource)
@@ -69,27 +74,23 @@ public final class Migrator
         LOGGER.info("Migration completed ...");
     }
 
-    private static void resetOrCreateDatabase(
-        final PGSimpleDataSource dbSource,
+    private static void createDatabase(
+        final Connection connection,
         final String dbName
     ) throws SQLException
     {
-        try (final Connection connection = dbSource.getConnection();
-
-             final PreparedStatement statement = connection.prepareStatement(String.format(CREATE_DATABASE, dbName));
-        ) {
+        try (final PreparedStatement statement = connection.prepareStatement(String.format(CREATE_DATABASE, dbName))){
             statement.executeUpdate();
             LOGGER.info("Created new database: {}", dbName);
         }
     }
 
     private static boolean doesDbExist(
-        final PGSimpleDataSource dbSource,
+        final Connection connection,
         final String dbName
     ) throws SQLException
     {
-        try (final Connection connection = dbSource.getConnection();
-             final PreparedStatement statement = connection.prepareStatement(DOES_DATABASE_EXIST)) {
+        try (final PreparedStatement statement = connection.prepareStatement(DOES_DATABASE_EXIST)) {
             statement.setString(1, dbName);
             final ResultSet set = statement.executeQuery();
             set.next();
