@@ -79,7 +79,7 @@ public final class Migrator
     {
         try (final PreparedStatement statement = connection.prepareStatement(String.format(CREATE_DATABASE, dbName))){
             statement.executeUpdate();
-            LOGGER.info("DB update finished. {}", dbName);
+            LOGGER.info("DB update finished.");
         }
     }
 
