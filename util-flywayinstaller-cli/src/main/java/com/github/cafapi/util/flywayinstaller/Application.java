@@ -17,7 +17,7 @@ package com.github.cafapi.util.flywayinstaller;
 
 import ch.qos.logback.classic.Level;
 import ch.qos.logback.classic.LoggerContext;
-import com.github.cafapi.util.flywayinstaller.exceptions.InvalidConnectionStringException;
+
 import java.sql.SQLException;
 import java.util.concurrent.Callable;
 import org.slf4j.Logger;
@@ -40,13 +40,22 @@ public final class Application implements Callable<Integer>
     }
 
     @CommandLine.Option(
-        names = {"-db.connection"},
-        paramLabel = "<connectionString>",
+        names = {"-db.server"},
+        paramLabel = "<dbServer>",
         required = true,
-        description = "Specifies the connection string to the database service. "
-        + "e.g. jdbc:postgresql://localhost:3307/"
+        description = "Specifies the database server name. "
+        + "e.g. localhost"
     )
-    private String connectionString;
+    private String dbServer;
+
+    @CommandLine.Option(
+        names = {"-db.port"},
+        paramLabel = "<dbPort>",
+        required = true,
+        description = "Specifies the database port to be used. "
+        + "e.g. 5432"
+    )
+    private int dbPort;
 
     @CommandLine.Option(
         names = {"-db.user"},
@@ -93,12 +102,12 @@ public final class Application implements Callable<Integer>
         }
 
         try {
-            Migrator.migrate(connectionString, dbName, username, password);
-        } catch (final InvalidConnectionStringException ex) {
-            LOGGER.error(ex.getMessage());
-            return 1;
+            Migrator.migrate(dbServer, dbPort, dbName, username, password);
         } catch (final SQLException ex) {
             LOGGER.error("Issue while trying to perform the migration.", ex);
+            return 1;
+        } catch (final Exception ex) {
+            LOGGER.error(ex.getMessage());
             return 2;
         }
         return 0;

@@ -7,7 +7,7 @@ To make use of the installer use the following steps:
 
 1. Create a new Java project.
 2. Add `com.github.cafapi.util.flywayinstaller` as a dependency.
-3. Create a folder called `db.migration` in the `resources` folder of the project.
+3. Create the migration directory `src/main/resources/db/migration`.
 4. Build the project with the mainClass as:
 
    `com.github.cafapi.util.flywayinstaller.Application`
@@ -64,11 +64,12 @@ Below is an example project's POM showing how to build using the Flyway installe
 
 The installer is run via command line. The following arguments can be specified:
 
-*   `db.connection`  : Specifies the connection string to the database service. This does not include the database name.  e.g. jdbc:postgresql:/localhost:3307/
-*   `db.user`  :  Specifies the username to access the database.
-*   `db.pass`  :  Specifies the password to access the database.
-*   `db.name`  :  Specifies the name of the database to be created or updated.
-*   `log` : Specifies the logging level of the installer. Valid options are: [DEBUG, INFO, WARNING, ERROR, OFF]
+*   `db.server`  : Specifies the server name.  e.g. localhost
+*   `db.port`    : Specifies the server port.  e.g. 5432
+*   `db.user`    : Specifies the username to access the database.
+*   `db.pass`    : Specifies the password to access the database.
+*   `db.name`    : Specifies the name of the database to be created or updated.
+*   `log`        : Specifies the logging level of the installer. Valid options are: [DEBUG, INFO, WARNING, ERROR, OFF]
 
 The command to run the jar will be in the following format:
 
@@ -76,4 +77,4 @@ The command to run the jar will be in the following format:
 
 For example:
 
-    java -jar myInstaller.jar -db.connection=jdbc:postgresql://localhost:5437/ -db.user=postgres -db.pass=postgres -db.name=test-db3 -log=DEBUG
+    java -jar myInstaller.jar -db.server=localhost -db.port=5437 -db.user=postgres -db.pass=postgres -db.name=test-db2 -log=DEBUG
