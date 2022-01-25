@@ -69,7 +69,7 @@ public final class Migrator
                 .baselineOnMigrate(true)
                 .load();
         flyway.migrate();
-        LOGGER.info("Migration completed ...");
+        LOGGER.info("DB update finished.");
     }
 
     private static void createDatabase(
@@ -79,7 +79,7 @@ public final class Migrator
     {
         try (final PreparedStatement statement = connection.prepareStatement(String.format(CREATE_DATABASE, dbName))){
             statement.executeUpdate();
-            LOGGER.info("DB update finished.");
+            LOGGER.info("Created new database: {}", dbName);
         }
     }
 
