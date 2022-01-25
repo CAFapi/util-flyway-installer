@@ -40,13 +40,13 @@ public final class Application implements Callable<Integer>
     }
 
     @CommandLine.Option(
-        names = {"-db.server"},
-        paramLabel = "<dbServer>",
+        names = {"-db.host"},
+        paramLabel = "<dbHost>",
         required = true,
-        description = "Specifies the database server name. "
+        description = "Specifies the database host name. "
         + "e.g. localhost"
     )
-    private String dbServer;
+    private String dbHost;
 
     @CommandLine.Option(
         names = {"-db.port"},
@@ -102,7 +102,7 @@ public final class Application implements Callable<Integer>
         }
 
         try {
-            Migrator.migrate(dbServer, dbPort, dbName, username, password);
+            Migrator.migrate(dbHost, dbPort, dbName, username, password);
         } catch (final SQLException ex) {
             LOGGER.error("Issue while trying to perform the migration.", ex);
             return 1;

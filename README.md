@@ -64,7 +64,7 @@ Below is an example project's POM showing how to build using the Flyway installe
 
 The installer is run via command line. The following arguments can be specified:
 
-*   `db.server`  : Specifies the server name.  e.g. localhost
+*   `db.host`    : Specifies the host name.  e.g. localhost
 *   `db.port`    : Specifies the server port.  e.g. 5432
 *   `db.user`    : Specifies the username to access the database.
 *   `db.pass`    : Specifies the password to access the database.
@@ -77,4 +77,4 @@ The command to run the jar will be in the following format:
 
 For example:
 
-    java -jar myInstaller.jar -db.server=localhost -db.port=5437 -db.user=postgres -db.pass=postgres -db.name=test-db2 -log=DEBUG
+    java -jar myInstaller.jar -db.host=localhost -db.port=5437 -db.user=postgres -db.pass=postgres -db.name=test-db2 -log=DEBUG

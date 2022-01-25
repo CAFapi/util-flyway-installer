@@ -36,19 +36,19 @@ public final class Migrator
     }
 
     public static void migrate(
-        final String dbServer,
+        final String dbHost,
         final int dbPort,
         final String dbName,
         final String username,
         final String password
     ) throws SQLException
     {
-        logReceivedArgumentsIfDebug(dbServer, dbPort, dbName, username, password);
+        logReceivedArgumentsIfDebug(dbHost, dbPort, dbName, username, password);
 
         LOGGER.info("Checking connection ...");
 
         final PGSimpleDataSource dbSource = new PGSimpleDataSource();
-        dbSource.setServerNames(new String[] {dbServer});
+        dbSource.setServerNames(new String[] {dbHost});
         dbSource.setPortNumbers(new int[]{dbPort});
         dbSource.setUser(username);
         dbSource.setPassword(password);
@@ -96,17 +96,17 @@ public final class Migrator
         }
     }
 
-    private static void logReceivedArgumentsIfDebug(final String dbServer,
+    private static void logReceivedArgumentsIfDebug(final String dbHost,
                                                     final int dbPort,
                                                     final String dbName,
                                                     final String username,
                                                     final String password)
     {
         LOGGER.debug("Arguments received"
-                + " dbServer: {}"
+                + " dbHost: {}"
                 + " dbPort: {}"
                 + " dbName: {}"
                 + " username: {}"
-                + " password: {}", dbServer, dbPort, dbName, username, password);
+                + " password: {}", dbHost, dbPort, dbName, username, password);
     }
 }
