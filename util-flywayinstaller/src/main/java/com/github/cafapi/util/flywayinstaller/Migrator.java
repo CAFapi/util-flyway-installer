@@ -48,12 +48,12 @@ public final class Migrator
         LOGGER.info("Checking connection ...");
 
         final PGSimpleDataSource dbSource = new PGSimpleDataSource();
-        dbSource.setServerNames(new String[] {dbHost});
+        dbSource.setServerNames(new String[]{dbHost});
         dbSource.setPortNumbers(new int[]{dbPort});
         dbSource.setUser(username);
         dbSource.setPassword(password);
 
-        try(final Connection connection = dbSource.getConnection()){
+        try (final Connection connection = dbSource.getConnection()) {
             if (!doesDbExist(connection, dbName)) {
                 LOGGER.debug("reset or createDB");
                 createDatabase(connection, dbName);
@@ -65,9 +65,9 @@ public final class Migrator
         dbSource.setDatabaseName(dbName);
 
         final Flyway flyway = Flyway.configure()
-                .dataSource(dbSource)
-                .baselineOnMigrate(true)
-                .load();
+            .dataSource(dbSource)
+            .baselineOnMigrate(true)
+            .load();
         flyway.migrate();
         LOGGER.info("DB update finished.");
     }
@@ -77,7 +77,7 @@ public final class Migrator
         final String dbName
     ) throws SQLException
     {
-        try (final PreparedStatement statement = connection.prepareStatement(String.format(CREATE_DATABASE, dbName))){
+        try (final PreparedStatement statement = connection.prepareStatement(String.format(CREATE_DATABASE, dbName))) {
             statement.executeUpdate();
             LOGGER.info("Created new database: {}", dbName);
         }
@@ -96,17 +96,19 @@ public final class Migrator
         }
     }
 
-    private static void logReceivedArgumentsIfDebug(final String dbHost,
-                                                    final int dbPort,
-                                                    final String dbName,
-                                                    final String username,
-                                                    final String password)
+    private static void logReceivedArgumentsIfDebug(
+        final String dbHost,
+        final int dbPort,
+        final String dbName,
+        final String username,
+        final String password
+    )
     {
         LOGGER.debug("Arguments received"
-                + " dbHost: {}"
-                + " dbPort: {}"
-                + " dbName: {}"
-                + " username: {}"
-                + " password: {}", dbHost, dbPort, dbName, username, password);
+            + " dbHost: {}"
+            + " dbPort: {}"
+            + " dbName: {}"
+            + " username: {}"
+            + " password: {}", dbHost, dbPort, dbName, username, password);
     }
 }

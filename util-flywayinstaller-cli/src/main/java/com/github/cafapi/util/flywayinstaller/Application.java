@@ -17,7 +17,6 @@ package com.github.cafapi.util.flywayinstaller;
 
 import ch.qos.logback.classic.Level;
 import ch.qos.logback.classic.LoggerContext;
-
 import java.sql.SQLException;
 import java.util.concurrent.Callable;
 import org.slf4j.Logger;
