@@ -15,7 +15,6 @@
  */
 package com.github.cafapi.util.flywayinstaller;
 
-import java.net.ConnectException;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -29,7 +28,6 @@ public final class Migrator
 {
     private static final Logger LOGGER = LoggerFactory.getLogger(Migrator.class);
     private static final String CREATE_DATABASE = "CREATE DATABASE \"%s\"";
-    private static final int CONNECTION_TIMEOUT_SECOND = 1;
     private static final String DOES_DATABASE_EXIST
         = "SELECT EXISTS (SELECT NULL FROM pg_catalog.pg_database WHERE lower( datname ) = lower( ? ));";
 
