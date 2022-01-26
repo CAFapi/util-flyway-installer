@@ -27,7 +27,7 @@ import org.slf4j.LoggerFactory;
 public final class Migrator
 {
     private static final Logger LOGGER = LoggerFactory.getLogger(Migrator.class);
-    private static final String CREATE_DATABASE = "CREATE DATABASE \"%s\"";
+    private static final String CREATE_DATABASE = "SELECT format('CREATE DATABASE %I', ?)";
     private static final String DOES_DATABASE_EXIST
         = "SELECT EXISTS (SELECT NULL FROM pg_catalog.pg_database WHERE lower( datname ) = lower( ? ));";
 
@@ -48,7 +48,7 @@ public final class Migrator
         LOGGER.info("Checking connection ...");
 
         final PGSimpleDataSource dbSource = new PGSimpleDataSource();
-        dbSource.setServerNames(new String[] {dbHost});
+        dbSource.setServerNames(new String[]{dbHost});
         dbSource.setPortNumbers(new int[]{dbPort});
         dbSource.setUser(username);
         dbSource.setPassword(password);
@@ -77,9 +77,21 @@ public final class Migrator
         final String dbName
     ) throws SQLException
     {
-        try (final PreparedStatement statement = connection.prepareStatement(String.format(CREATE_DATABASE, dbName))){
-            statement.executeUpdate();
+        final String createDbQuery = getCreateDbQuery(connection, dbName);
+
+        try (final PreparedStatement createDbStatement = connection.prepareStatement(createDbQuery)) {
+            createDbStatement.executeUpdate();
             LOGGER.info("Created new database: {}", dbName);
+        }
+    }
+
+    private static String getCreateDbQuery(final Connection connection, final String dbName) throws SQLException
+    {
+        try (final PreparedStatement getCreateDbQueryStatement = connection.prepareStatement(CREATE_DATABASE)) {
+            getCreateDbQueryStatement.setString(1, dbName);
+            final ResultSet set = getCreateDbQueryStatement.executeQuery();
+            set.next();
+            return set.getString(1);
         }
     }
 
@@ -96,17 +108,19 @@ public final class Migrator
         }
     }
 
-    private static void logReceivedArgumentsIfDebug(final String dbHost,
-                                                    final int dbPort,
-                                                    final String dbName,
-                                                    final String username,
-                                                    final String password)
+    private static void logReceivedArgumentsIfDebug(
+        final String dbHost,
+        final int dbPort,
+        final String dbName,
+        final String username,
+        final String password
+    )
     {
         LOGGER.debug("Arguments received"
-                + " dbHost: {}"
-                + " dbPort: {}"
-                + " dbName: {}"
-                + " username: {}"
-                + " password: {}", dbHost, dbPort, dbName, username, password);
+            + " dbHost: {}"
+            + " dbPort: {}"
+            + " dbName: {}"
+            + " username: {}"
+            + " password: {}", dbHost, dbPort, dbName, username, password);
     }
 }
