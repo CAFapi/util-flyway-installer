@@ -65,9 +65,9 @@ public final class Migrator
         dbSource.setDatabaseName(dbName);
 
         final Flyway flyway = Flyway.configure()
-                .dataSource(dbSource)
-                .baselineOnMigrate(true)
-                .load();
+            .dataSource(dbSource)
+            .baselineOnMigrate(true)
+            .load();
         flyway.migrate();
         LOGGER.info("DB update finished.");
     }
