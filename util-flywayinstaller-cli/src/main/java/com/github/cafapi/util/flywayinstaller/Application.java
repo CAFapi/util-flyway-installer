@@ -17,6 +17,7 @@ package com.github.cafapi.util.flywayinstaller;
 
 import ch.qos.logback.classic.Level;
 import ch.qos.logback.classic.LoggerContext;
+import java.sql.SQLException;
 import java.util.concurrent.Callable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -27,9 +28,7 @@ import picocli.CommandLine;
     mixinStandardHelpOptions = true,
     exitCodeListHeading = "%nExit Codes:%n",
     exitCodeList = {" 0:Successful program execution.",
-                    " 1:Authentication exception: There was an issue with your authentication. "
-                    + "Check your credentials, as well as the host and port provided",
-                    " 2:Execution exception: An exception occurred while executing the migrations."
+                    " 1:Execution exception: An exception occurred while executing the migrations."
     })
 public final class Application implements Callable<Integer>
 {
@@ -103,16 +102,9 @@ public final class Application implements Callable<Integer>
 
         try {
             Migrator.migrate(dbHost, dbPort, dbName, username, password);
-        } catch (final Exception ex) {
-            final String errorMessage = ex.getMessage();
-            if (errorMessage.matches("Connection(.*)refused(.*)")
-                || errorMessage.matches("(.*)password authentication failed(.*)")
-                || errorMessage.matches("(.*)connection attempt failed(.*)")) {
-                LOGGER.error("Issue while authenticating. {} / {}", ex.getClass(), errorMessage);
-                return 1;
-            }
-            LOGGER.error("Issue while migrating. {} / {}", ex.getClass(), errorMessage);
-            return 2;
+        } catch (final SQLException | RuntimeException ex) {
+            LOGGER.error("Issue while migrating.", ex);
+            return 1;
         }
         return 0;
     }

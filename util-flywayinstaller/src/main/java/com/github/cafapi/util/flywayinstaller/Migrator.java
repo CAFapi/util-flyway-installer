@@ -19,6 +19,7 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Statement;
 import org.flywaydb.core.Flyway;
 import org.postgresql.ds.PGSimpleDataSource;
 import org.slf4j.Logger;
@@ -79,8 +80,8 @@ public final class Migrator
     {
         final String createDbQuery = getCreateDbQuery(connection, dbName);
 
-        try (final PreparedStatement createDbStatement = connection.prepareStatement(createDbQuery)) {
-            createDbStatement.executeUpdate();
+        try (final Statement createDbStatement = connection.createStatement()) {
+            createDbStatement.executeUpdate(createDbQuery);
             LOGGER.info("Created new database: {}", dbName);
         }
     }
