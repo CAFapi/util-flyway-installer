@@ -53,7 +53,7 @@ public final class Migrator
         dbSource.setUser(username);
         dbSource.setPassword(password);
 
-        try(final Connection connection = dbSource.getConnection()){
+        try (final Connection connection = dbSource.getConnection()) {
             if (!doesDbExist(connection, dbName)) {
                 LOGGER.debug("reset or createDB");
                 createDatabase(connection, dbName);
