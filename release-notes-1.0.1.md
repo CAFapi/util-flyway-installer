@@ -5,7 +5,7 @@ ${version-number}
 - None
 
 #### Patch Fixes Included
-- Dependency updates only were in the release
+- PostgreSQL JDBC driver version upgraded
 
 #### Known Issues
 - None
