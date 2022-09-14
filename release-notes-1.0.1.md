@@ -5,7 +5,7 @@ ${version-number}
 - None
 
 #### Patch Fixes Included
-- PostgreSQL JDBC driver version upgraded
+- US509054: Upgrade PostgreSQL JDBC Driver
 
 #### Known Issues
 - None
