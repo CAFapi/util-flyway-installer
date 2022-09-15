@@ -24,7 +24,7 @@
     <parent>
         <artifactId>util-flywayinstaller-aggregator</artifactId>
         <groupId>com.github.cafapi.util.flywayinstaller</groupId>
-        <version>1.0.1-SNAPSHOT</version>
+        <version>1.0.1-98</version>
     </parent>
 
     <artifactId>util-flywayinstaller-cli</artifactId>
