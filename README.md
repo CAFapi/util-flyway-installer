@@ -8,7 +8,7 @@ To make use of the installer use the following steps:
 1. Create a new Java project.
 2. Add `com.github.cafapi.util.flywayinstaller-cli` as a runtime dependency.
 3. Create the migration directory `src/main/resources/db/migration`.
-
+```
     <dependencies>
         <dependency>
             <groupId>com.github.cafapi.util.flywayinstaller</groupId>
@@ -16,7 +16,7 @@ To make use of the installer use the following steps:
             <scope>runtime</scope>
         </dependency>
     </dependencies>
-
+```
 Note: If you need to use a database driver other than `Postgresql` driver you must add it as a dependency to your project.
 
 ## Running the Installer
