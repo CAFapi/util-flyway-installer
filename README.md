@@ -6,63 +6,48 @@ The Flyway Database Installer is a generic  java application that will create an
 To make use of the installer use the following steps:
 
 1. Create a new Java project.
-2. Add `com.github.cafapi.util.flywayinstaller` as a dependency.
+2. Add `com.github.cafapi.util.flywayinstaller-cli` as a runtime dependency.
 3. Create the migration directory `src/main/resources/db/migration`.
-4. Build the project with the mainClass as:
-
-   `com.github.cafapi.util.flywayinstaller.Application`
-
-This will produce a jar specific to your project.
 
 Note: The installer comes prepackaged only with Postgresql driver. If you need to use another database driver you must add it as a 
 dependency to your own project.
 
-## Example POM
-Below is an example project's POM showing how to build using the Flyway installer.
-
-    <groupId>com.acme.anvils</groupId>
-    <artifactId>anvil-db</artifactId>
-    <version>1.0.0-SNAPSHOT</version>
-
     <dependencies>
         <dependency>
             <groupId>com.github.cafapi.util.flywayinstaller</groupId>
-            <artifactId>util-flywayinstaller</artifactId>
-            <version>1.0.0-SNAPSHOT</version>
+            <artifactId>util-flywayinstaller-cli</artifactId>
+            <scope>runtime</scope>
         </dependency>
     </dependencies>
 
-    <build>
-        <plugins>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-assembly-plugin</artifactId>
-                <configuration>
-                    <archive>
-                        <manifest>
-                            <mainClass>com.github.cafapi.util.flywayinstaller.Application</mainClass>
-                        </manifest>
-                    </archive>
-                    <descriptorRefs>
-                        <descriptorRef>jar-with-dependencies</descriptorRef>
-                    </descriptorRefs>
-                </configuration>
-                <executions>
-                    <execution>
-                        <id>make-assembly</id> <!-- this is used for inheritance merges -->
-                        <phase>package</phase> <!-- bind to the packaging phase -->
-                        <goals>
-                            <goal>single</goal>
-                        </goals>
-                    </execution>
-                </executions>
-            </plugin>
-        </plugins>
-    </build>
 
 ## Running the Installer
 
-The installer is run via command line. The following arguments can be specified:
+The installer is run via command line. The following dependencies are expected in the classpath:
+
+- logback-classic-1.4.14.jar
+- logback-core-1.4.14.jar 
+- util-flywayinstaller-2.1.0-SNAPSHOT.jar 
+- flyway-core-10.7.1.jar 
+- jackson-dataformat-toml-2.16.1.jar 
+- jackson-databind-2.16.1.jar 
+- jackson-annotations-2.16.1.jar 
+- gson-2.10.1.jar 
+- postgresql-42.7.1.jar 
+- checker-qual-3.42.0.jar 
+- flyway-database-postgresql-10.7.1.jar 
+- jcl-over-slf4j-2.0.11.jar 
+- picocli-4.7.5.jar 
+- slf4j-api-2.0.11.jar 
+- caf-logging-logback-2.0.0-238.jar 
+- caf-logging-logback-converters-2.0.0-238.jar 
+- jackson-core-2.16.1.jar 
+- caf-logging-common-2.0.0-238.jar 
+- util-process-identifier-3.0.0-549.jar 
+- commons-text-1.11.0.jar 
+- commons-lang3-3.14.0.jar
+
+The following arguments can be specified:
 
 *   `db.host`    : Specifies the host name.  e.g. localhost
 *   `db.port`    : Specifies the server port.  e.g. 5432
@@ -73,8 +58,8 @@ The installer is run via command line. The following arguments can be specified:
 
 The command to run the jar will be in the following format:
 
-    java -jar [system properties] installer.jar [arguments]
+    java -cp [system properties] <dependency-jars>:installer.jar com.github.cafapi.util.flywayinstaller.Application [arguments]
 
 For example:
 
-    java -jar myInstaller.jar -db.host=localhost -db.port=5437 -db.user=postgres -db.pass=postgres -db.name=test-db2 -log=DEBUG
+    java -cp *:myInstaller.jar com.github.cafapi.util.flywayinstaller.Application -db.host localhost -db.port 5437 -db.user postgres -db.pass postgres -db.name test-db2 -log DEBUG
