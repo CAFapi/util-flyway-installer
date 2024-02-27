@@ -62,7 +62,6 @@
                     <archive>
                         <manifest>
                             <addClasspath>true</addClasspath>
-                            <mainClass>com.github.cafapi.util.flywayinstaller.Application</mainClass>
                         </manifest>
                     </archive>
                 </configuration>
