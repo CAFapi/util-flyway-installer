@@ -9,9 +9,6 @@ To make use of the installer use the following steps:
 2. Add `com.github.cafapi.util.flywayinstaller-cli` as a runtime dependency.
 3. Create the migration directory `src/main/resources/db/migration`.
 
-Note: The installer comes prepackaged only with Postgresql driver. If you need to use another database driver you must add it as a 
-dependency to your own project.
-
     <dependencies>
         <dependency>
             <groupId>com.github.cafapi.util.flywayinstaller</groupId>
@@ -20,32 +17,11 @@ dependency to your own project.
         </dependency>
     </dependencies>
 
+Note: If you need to use a database driver other than `Postgresql` driver you must add it as a dependency to your project.
 
 ## Running the Installer
 
-The installer is run via command line. The following dependencies are expected in the classpath:
-
-- logback-classic-1.4.14.jar
-- logback-core-1.4.14.jar 
-- util-flywayinstaller-2.1.0-SNAPSHOT.jar 
-- flyway-core-10.7.1.jar 
-- jackson-dataformat-toml-2.16.1.jar 
-- jackson-databind-2.16.1.jar 
-- jackson-annotations-2.16.1.jar 
-- gson-2.10.1.jar 
-- postgresql-42.7.1.jar 
-- checker-qual-3.42.0.jar 
-- flyway-database-postgresql-10.7.1.jar 
-- jcl-over-slf4j-2.0.11.jar 
-- picocli-4.7.5.jar 
-- slf4j-api-2.0.11.jar 
-- caf-logging-logback-2.0.0-238.jar 
-- caf-logging-logback-converters-2.0.0-238.jar 
-- jackson-core-2.16.1.jar 
-- caf-logging-common-2.0.0-238.jar 
-- util-process-identifier-3.0.0-549.jar 
-- commons-text-1.11.0.jar 
-- commons-lang3-3.14.0.jar
+The installer is run via command line. The dependencies mentioned in the manifest file of the `util-flywayinstaller-cli` jar are expected in the classpath.
 
 The following arguments can be specified:
 
@@ -58,7 +34,7 @@ The following arguments can be specified:
 
 The command to run the jar will be in the following format:
 
-    java -cp [system properties] <dependency-jars>:installer.jar com.github.cafapi.util.flywayinstaller.Application [arguments]
+    java -cp [system properties] *:installer.jar com.github.cafapi.util.flywayinstaller.Application [arguments]
 
 For example:
 
