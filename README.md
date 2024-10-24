@@ -11,7 +11,7 @@ The following arguments can be specified:
 *   `db.host`        : Specifies the host name.  e.g. localhost
 *   `db.port`        : Specifies the server port.  e.g. 5432
 *   `db.user`        : Specifies the username to access the database.
-*   `db.secretKeys`  : Specifies the key(s) (comma separated) of the secret used to access the database. 
+*   `db.secretKeys`  : Specifies the key(s) of the secret(s) used to access the database, separated by commas.
 *   `db.name`        : Specifies the name of the database to be created or updated.
 *   `log`            : Specifies the logging level of the installer. Valid options are: [DEBUG, INFO, WARNING, ERROR, OFF]
 
