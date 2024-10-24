@@ -73,7 +73,7 @@ public final class Application implements Callable<Integer>
         names = {"-db.secret"},
         paramLabel = "<secret>",
         required = true,
-        description = "Specifies the name/key of the secret (not the actual secret value) used to access the database."
+        description = "Specifies the key of the secret used to access the database."
     )
     private String secret;
 
