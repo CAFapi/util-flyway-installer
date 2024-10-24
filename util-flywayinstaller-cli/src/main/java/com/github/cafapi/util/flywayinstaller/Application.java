@@ -75,7 +75,8 @@ public final class Application implements Callable<Integer>
         paramLabel = "<secretKeys>",
         required = true,
         split = ",",
-        description = "Specifies the key(s) of the secret(s) used to access the database, separated by commas."
+        description = "Specifies the secret keys used to access the database, separated by commas. The first non-empty secret value " +
+                "found for any of these keys will be used.\""
     )
     private List<String> secretKeys;
 
