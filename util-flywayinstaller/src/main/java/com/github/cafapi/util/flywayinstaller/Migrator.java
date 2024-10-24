@@ -41,10 +41,11 @@ public final class Migrator
         final int dbPort,
         final String dbName,
         final String username,
+        final String secret,
         final String password
     ) throws SQLException
     {
-        logReceivedArgumentsIfDebug(dbHost, dbPort, dbName, username, password);
+        logReceivedArgumentsIfDebug(dbHost, dbPort, dbName, username, secret);
 
         LOGGER.info("Checking connection ...");
 
@@ -114,7 +115,7 @@ public final class Migrator
         final int dbPort,
         final String dbName,
         final String username,
-        final String password
+        final String secret
     )
     {
         LOGGER.debug("Arguments received"
@@ -122,6 +123,6 @@ public final class Migrator
             + " dbPort: {}"
             + " dbName: {}"
             + " username: {}"
-            + " password: {}", dbHost, dbPort, dbName, username, password);
+            + " secret: {}", dbHost, dbPort, dbName, username, secret);
     }
 }

@@ -35,6 +35,10 @@
             <artifactId>logback-classic</artifactId>
         </dependency>
         <dependency>
+            <groupId>com.github.cafapi.util</groupId>
+            <artifactId>util-secret</artifactId>
+        </dependency>
+        <dependency>
             <groupId>com.github.cafapi.util.flywayinstaller</groupId>
             <artifactId>util-flywayinstaller</artifactId>
         </dependency>

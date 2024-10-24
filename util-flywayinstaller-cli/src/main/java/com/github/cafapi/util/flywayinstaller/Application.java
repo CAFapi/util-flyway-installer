@@ -17,10 +17,15 @@ package com.github.cafapi.util.flywayinstaller;
 
 import ch.qos.logback.classic.Level;
 import ch.qos.logback.classic.LoggerContext;
+
+import java.io.IOException;
 import java.sql.SQLException;
 import java.util.concurrent.Callable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import com.hpe.caf.secret.SecretUtil;
+
 import picocli.CommandLine;
 
 @CommandLine.Command(
@@ -65,12 +70,12 @@ public final class Application implements Callable<Integer>
     private String username;
 
     @CommandLine.Option(
-        names = {"-db.pass"},
-        paramLabel = "<password>",
+        names = {"-db.secret"},
+        paramLabel = "<secret>",
         required = true,
-        description = "Specifies the password to access the database."
+        description = "Specifies the name/key of the secret (not the actual secret value) used to access the database."
     )
-    private String password;
+    private String secret;
 
     @CommandLine.Option(
         names = {"-db.name"},
@@ -101,8 +106,8 @@ public final class Application implements Callable<Integer>
         }
 
         try {
-            Migrator.migrate(dbHost, dbPort, dbName, username, password);
-        } catch (final SQLException | RuntimeException ex) {
+            Migrator.migrate(dbHost, dbPort, dbName, username, secret, SecretUtil.getSecret(secret));
+        } catch (final SQLException | RuntimeException | IOException ex) {
             LOGGER.error("Issue while migrating.", ex);
             return 1;
         }
