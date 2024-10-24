@@ -20,6 +20,7 @@ import ch.qos.logback.classic.LoggerContext;
 
 import java.io.IOException;
 import java.sql.SQLException;
+import java.util.List;
 import java.util.concurrent.Callable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -70,12 +71,13 @@ public final class Application implements Callable<Integer>
     private String username;
 
     @CommandLine.Option(
-        names = {"-db.secret"},
-        paramLabel = "<secret>",
+        names = {"-db.secretKeys"},
+        paramLabel = "<secretKeys>",
         required = true,
-        description = "Specifies the key of the secret used to access the database."
+        split = ",",
+        description = "Specifies the keys of the secret(s) used to access the database, separated by commas."
     )
-    private String secret;
+    private List<String> secretKeys;
 
     @CommandLine.Option(
         names = {"-db.name"},
@@ -106,7 +108,7 @@ public final class Application implements Callable<Integer>
         }
 
         try {
-            Migrator.migrate(dbHost, dbPort, dbName, username, secret, SecretUtil.getSecret(secret));
+            Migrator.migrate(dbHost, dbPort, dbName, username, secretKeys, getFirstNonEmptySecret(secretKeys));
         } catch (final SQLException | RuntimeException | IOException ex) {
             LOGGER.error("Issue while migrating.", ex);
             return 1;
@@ -119,5 +121,17 @@ public final class Application implements Callable<Integer>
         final LoggerContext loggerContext = (LoggerContext) LoggerFactory.getILoggerFactory();
         loggerContext.getLoggerList().forEach(tmpLogger -> tmpLogger.setLevel(Level.toLevel(logLevel.name())));
         LOGGER.debug("Log level set to {}.", logLevel);
+    }
+
+    private static String getFirstNonEmptySecret(final List<String> secretKeys) throws IOException
+    {
+        for (final String secretKey : secretKeys) {
+            final String secretValue = SecretUtil.getSecret(secretKey);
+            if (secretValue != null && !secretValue.isEmpty()) {
+                return secretValue;
+            }
+        }
+
+        throw new RuntimeException(String.format("No secret found for key(s): {}", secretKeys));
     }
 }
