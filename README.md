@@ -21,4 +21,4 @@ The command to run the jar will be in the following format, where the migration 
 
 For example:
 
-    java -cp "*:db" com.github.cafapi.util.flywayinstaller.Application -db.host localhost -db.port 5437 -db.user postgres -db.secretKeys CAF_STORAGE_DATABASE_PASSWORD -db.name test-db2 -log DEBUG
+    java -cp "*:db" com.github.cafapi.util.flywayinstaller.Application -db.host localhost -db.port 5437 -db.user postgres -db.secretKeys CAF_SERVICE_DATABASE_PASSWORD -db.name test-db2 -log DEBUG
