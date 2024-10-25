@@ -20,6 +20,8 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.List;
+
 import org.flywaydb.core.Flyway;
 import org.postgresql.ds.PGSimpleDataSource;
 import org.slf4j.Logger;
@@ -41,10 +43,11 @@ public final class Migrator
         final int dbPort,
         final String dbName,
         final String username,
+        final List<String> secretKeys,
         final String password
     ) throws SQLException
     {
-        logReceivedArgumentsIfDebug(dbHost, dbPort, dbName, username, password);
+        logReceivedArgumentsIfDebug(dbHost, dbPort, dbName, username, secretKeys);
 
         LOGGER.info("Checking connection ...");
 
@@ -114,7 +117,7 @@ public final class Migrator
         final int dbPort,
         final String dbName,
         final String username,
-        final String password
+        final List<String> secretKeys
     )
     {
         LOGGER.debug("Arguments received"
@@ -122,6 +125,6 @@ public final class Migrator
             + " dbPort: {}"
             + " dbName: {}"
             + " username: {}"
-            + " password: {}", dbHost, dbPort, dbName, username, password);
+            + " secretKeys: {}", dbHost, dbPort, dbName, username, secretKeys);
     }
 }
