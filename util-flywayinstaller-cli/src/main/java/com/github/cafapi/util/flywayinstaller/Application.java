@@ -15,6 +15,7 @@
  */
 package com.github.cafapi.util.flywayinstaller;
 
+import com.github.cafapi.common.util.secret.SecretUtil;
 import ch.qos.logback.classic.Level;
 import ch.qos.logback.classic.LoggerContext;
 
@@ -25,7 +26,6 @@ import java.util.concurrent.Callable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.hpe.caf.secret.SecretUtil;
 
 import picocli.CommandLine;
 
