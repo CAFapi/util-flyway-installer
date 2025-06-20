@@ -28,6 +28,7 @@
     </parent>
 
     <artifactId>util-flywayinstaller-cli</artifactId>
+    <name>util-flywayinstaller-cli</name>
 
     <dependencies>
         <dependency>
