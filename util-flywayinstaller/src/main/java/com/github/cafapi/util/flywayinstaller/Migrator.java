@@ -33,12 +33,14 @@ public final class Migrator
     private static final String CREATE_DATABASE = "SELECT format('CREATE DATABASE %I', ?)";
     private static final String DOES_DATABASE_EXIST
         = "SELECT EXISTS (SELECT NULL FROM pg_catalog.pg_database WHERE lower( datname ) = lower( ? ));";
+    private static final String CREATE_SCHEMA = "CREATE SCHEMA IF NOT EXISTS ?";
 
     private Migrator()
     {
     }
 
-    public static void migrate(
+    // Overloaded method for backward compatibility
+    private static void migrate(
         final String dbHost,
         final int dbPort,
         final String dbName,
@@ -47,7 +49,20 @@ public final class Migrator
         final String password
     ) throws SQLException
     {
-        logReceivedArgumentsIfDebug(dbHost, dbPort, dbName, username, secretKeys);
+        migrate(dbHost, dbPort, dbName, username, secretKeys, password, null);
+    }
+
+    public static void migrate(
+        final String dbHost,
+        final int dbPort,
+        final String dbName,
+        final String username,
+        final List<String> secretKeys,
+        final String password,
+        final String schemaName
+    ) throws SQLException
+    {
+        logReceivedArgumentsIfDebug(dbHost, dbPort, dbName, username, secretKeys, schemaName);
 
         LOGGER.info("Checking connection ...");
 
@@ -68,9 +83,14 @@ public final class Migrator
         // Once we made sure that the database exists, we add the information in the dataSource
         dbSource.setDatabaseName(dbName);
 
+        // Set default schema to user-specified schema if provided, otherwise use "public"
+        final String defaultSchema = schemaName == null ? "public" : schemaName;
+        LOGGER.info("Using schema: {}", defaultSchema);
+
         final Flyway flyway = Flyway.configure()
             .dataSource(dbSource)
             .baselineOnMigrate(true)
+            .defaultSchema(defaultSchema)
             .load();
         flyway.migrate();
         LOGGER.info("DB update finished.");
@@ -117,7 +137,8 @@ public final class Migrator
         final int dbPort,
         final String dbName,
         final String username,
-        final List<String> secretKeys
+        final List<String> secretKeys,
+        final String schema
     )
     {
         LOGGER.debug("Arguments received"
@@ -125,6 +146,7 @@ public final class Migrator
             + " dbPort: {}"
             + " dbName: {}"
             + " username: {}"
-            + " secretKeys: {}", dbHost, dbPort, dbName, username, secretKeys);
+            + " secretKeys: {}"
+            + "schema: {}", dbHost, dbPort, dbName, username, secretKeys, schema);
     }
 }

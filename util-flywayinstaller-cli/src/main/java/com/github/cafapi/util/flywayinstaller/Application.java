@@ -95,6 +95,13 @@ public final class Application implements Callable<Integer>
     )
     private LogLevel logLevel;
 
+    @CommandLine.Option(
+            names = {"-db.schema"},
+            paramLabel = "<schema>",
+            description = "Specifies the database schema to use. If not provided, the default schema 'public' will be used."
+    )
+    private String schema;
+
     public static void main(final String[] args)
     {
         final int exitCode = new CommandLine(new Application()).execute(args);
@@ -109,7 +116,7 @@ public final class Application implements Callable<Integer>
         }
 
         try {
-            Migrator.migrate(dbHost, dbPort, dbName, username, secretKeys, getFirstNonEmptySecret(secretKeys));
+            Migrator.migrate(dbHost, dbPort, dbName, username, secretKeys, getFirstNonEmptySecret(secretKeys), schema);
         } catch (final SQLException | RuntimeException | IOException ex) {
             LOGGER.error("Issue while migrating.", ex);
             return 1;
