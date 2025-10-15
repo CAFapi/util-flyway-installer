@@ -33,7 +33,6 @@ public final class Migrator
     private static final String CREATE_DATABASE = "SELECT format('CREATE DATABASE %I', ?)";
     private static final String DOES_DATABASE_EXIST
         = "SELECT EXISTS (SELECT NULL FROM pg_catalog.pg_database WHERE lower( datname ) = lower( ? ));";
-    private static final String CREATE_SCHEMA = "CREATE SCHEMA IF NOT EXISTS ?";
 
     private Migrator()
     {
