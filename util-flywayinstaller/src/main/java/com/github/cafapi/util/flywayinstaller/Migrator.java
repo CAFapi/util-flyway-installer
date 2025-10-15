@@ -40,7 +40,7 @@ public final class Migrator
     }
 
     // Overloaded method for backward compatibility
-    private static void migrate(
+    public static void migrate(
         final String dbHost,
         final int dbPort,
         final String dbName,
@@ -147,6 +147,6 @@ public final class Migrator
             + " dbName: {}"
             + " username: {}"
             + " secretKeys: {}"
-            + "schema: {}", dbHost, dbPort, dbName, username, secretKeys, schema);
+            + " schema: {}", dbHost, dbPort, dbName, username, secretKeys, schema);
     }
 }
