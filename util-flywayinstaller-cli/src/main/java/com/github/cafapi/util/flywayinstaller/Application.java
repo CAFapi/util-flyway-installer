@@ -96,9 +96,9 @@ public final class Application implements Callable<Integer>
     private LogLevel logLevel;
 
     @CommandLine.Option(
-            names = {"-db.schema"},
-            paramLabel = "<schema>",
-            description = "Specifies the database schema to use. If not provided, the default schema 'public' will be used."
+        names = {"-db.schema"},
+        paramLabel = "<schema>",
+        description = "Specifies the database schema to use. If not provided, the default schema 'public' will be used."
     )
     private String schema;
 
