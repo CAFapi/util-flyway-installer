@@ -38,7 +38,6 @@ public final class Migrator
     {
     }
 
-    // Overloaded method for backward compatibility
     @Deprecated
     public static void migrate(
         final String dbHost,
