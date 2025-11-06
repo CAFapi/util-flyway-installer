@@ -153,6 +153,6 @@ public final class Migrator
             + " username: {}"
             + " secretKeys: {}"
             + " schema: {}"
-            + "setCollation: {}", dbHost, dbPort, dbName, username, secretKeys, schema, setCollation);
+            + " setCollation: {}", dbHost, dbPort, dbName, username, secretKeys, schema, setCollation);
     }
 }
