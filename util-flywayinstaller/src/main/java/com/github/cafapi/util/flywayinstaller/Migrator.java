@@ -30,9 +30,10 @@ import org.slf4j.LoggerFactory;
 public final class Migrator
 {
     private static final Logger LOGGER = LoggerFactory.getLogger(Migrator.class);
-    private static final String CREATE_DATABASE = "SELECT format('CREATE DATABASE %I', ?)";
+    private static final String CREATE_DATABASE_BASE = "CREATE DATABASE %I";
     private static final String DOES_DATABASE_EXIST
         = "SELECT EXISTS (SELECT NULL FROM pg_catalog.pg_database WHERE lower( datname ) = lower( ? ));";
+    private static final String WITH_C_COLLATION = "WITH TEMPLATE template0 LC_COLLATE = 'C' LC_CTYPE = 'C'";
 
     private Migrator()
     {
@@ -48,7 +49,7 @@ public final class Migrator
         final String password
     ) throws SQLException
     {
-        migrate(dbHost, dbPort, dbName, username, secretKeys, password, null);
+        migrate(dbHost, dbPort, dbName, username, secretKeys, password, null, false);
     }
 
     public static void migrate(
@@ -58,10 +59,11 @@ public final class Migrator
         final String username,
         final List<String> secretKeys,
         final String password,
-        final String schemaName
+        final String schemaName,
+        final boolean setCollation
     ) throws SQLException
     {
-        logReceivedArgumentsIfDebug(dbHost, dbPort, dbName, username, secretKeys, schemaName);
+        logReceivedArgumentsIfDebug(dbHost, dbPort, dbName, username, secretKeys, schemaName, setCollation);
 
         LOGGER.info("Checking connection ...");
 
@@ -74,7 +76,7 @@ public final class Migrator
         try (final Connection connection = dbSource.getConnection()) {
             if (!doesDbExist(connection, dbName)) {
                 LOGGER.debug("reset or createDB");
-                createDatabase(connection, dbName);
+                createDatabase(connection, dbName, setCollation);
             }
         }
         LOGGER.info("Connection Ok. Starting migration ...");
@@ -97,10 +99,11 @@ public final class Migrator
 
     private static void createDatabase(
         final Connection connection,
-        final String dbName
+        final String dbName,
+        final boolean setCollation
     ) throws SQLException
     {
-        final String createDbQuery = getCreateDbQuery(connection, dbName);
+        final String createDbQuery = getCreateDbQuery(connection, dbName, setCollation);
 
         try (final Statement createDbStatement = connection.createStatement()) {
             createDbStatement.executeUpdate(createDbQuery);
@@ -108,9 +111,11 @@ public final class Migrator
         }
     }
 
-    private static String getCreateDbQuery(final Connection connection, final String dbName) throws SQLException
+    private static String getCreateDbQuery(final Connection connection, final String dbName, final boolean setCollation) throws SQLException
     {
-        try (final PreparedStatement getCreateDbQueryStatement = connection.prepareStatement(CREATE_DATABASE)) {
+        final String query = setCollation ? CREATE_DATABASE_BASE + " " + WITH_C_COLLATION : CREATE_DATABASE_BASE;
+        final String createDatabaseQuery = "SELECT format($fmt$" + query + "$fmt$, ?)";
+        try (final PreparedStatement getCreateDbQueryStatement = connection.prepareStatement(createDatabaseQuery)) {
             getCreateDbQueryStatement.setString(1, dbName);
             final ResultSet set = getCreateDbQueryStatement.executeQuery();
             set.next();
@@ -137,7 +142,8 @@ public final class Migrator
         final String dbName,
         final String username,
         final List<String> secretKeys,
-        final String schema
+        final String schema,
+        final boolean setCollation
     )
     {
         LOGGER.debug("Arguments received"
@@ -146,6 +152,7 @@ public final class Migrator
             + " dbName: {}"
             + " username: {}"
             + " secretKeys: {}"
-            + " schema: {}", dbHost, dbPort, dbName, username, secretKeys, schema);
+            + " schema: {}"
+            + "setCollation: {}", dbHost, dbPort, dbName, username, secretKeys, schema, setCollation);
     }
 }

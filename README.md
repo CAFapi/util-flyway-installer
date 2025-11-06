@@ -14,6 +14,7 @@ The following arguments can be specified:
 *   `db.secretKeys`  : Specifies the secret keys used to access the database, separated by commas. The first non-empty secret value found for any of these keys will be used.
 *   `db.name`        : Specifies the name of the database to be created or updated.
 *   `db.schema`      : (Optional) Specifies the database schema to be used. If not specified, the default schema for the database will be used.
+*   `db.useCollation`: (Optional) Specifies whether to use C collation when creating the database. Valid options are: [true, false]. Default is false.
 *   `log`            : Specifies the logging level of the installer. Valid options are: [DEBUG, INFO, WARNING, ERROR, OFF]
 
 The command to run the jar will be in the following format, where the migration files are in `db/migration`:
@@ -22,4 +23,4 @@ The command to run the jar will be in the following format, where the migration 
 
 For example:
 
-    java -cp "*:db" com.github.cafapi.util.flywayinstaller.Application -db.host localhost -db.port 5437 -db.user postgres -db.secretKeys CAF_SERVICE_DATABASE_PASSWORD -db.name test-db2 --db.schema test_schema -log DEBUG
+    java -cp "*:db" com.github.cafapi.util.flywayinstaller.Application -db.host localhost -db.port 5437 -db.user postgres -db.secretKeys CAF_SERVICE_DATABASE_PASSWORD -db.name test-db2 -db.schema test_schema -db.useCollation true  -log DEBUG
