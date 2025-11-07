@@ -14,7 +14,7 @@ The following arguments can be specified:
 *   `db.secretKeys`  : Specifies the secret keys used to access the database, separated by commas. The first non-empty secret value found for any of these keys will be used.
 *   `db.name`        : Specifies the name of the database to be created or updated.
 *   `db.schema`      : (Optional) Specifies the database schema to be used. If not specified, the default schema for the database will be used.
-*   `db.setCollation`: (Optional) Specifies the collation setting when creating the database. Valid options for now are: [`C`, `EN_US_UTF8`]. If not specified, the database default collation will be used.
+*   `db.setCollation`: (Optional) Specifies the collation setting when creating the database. Valid options for now are: [`C`, `UTF_8`]. If not specified, the database default collation will be used.
 *   `log`            : Specifies the logging level of the installer. Valid options are: [DEBUG, INFO, WARNING, ERROR, OFF]
 
 The command to run the jar will be in the following format, where the migration files are in `db/migration`:

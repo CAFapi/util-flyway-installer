@@ -38,7 +38,7 @@ public final class Migrator
     public enum Collation {
 
         C("C"),
-        EN_US_UTF8("en_US.UTF-8");
+        UTF_8("en_US.UTF-8");
 
         private final String value;
         Collation(final String value)
