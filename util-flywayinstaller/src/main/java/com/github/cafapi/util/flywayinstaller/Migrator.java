@@ -77,10 +77,10 @@ public final class Migrator
         final List<String> secretKeys,
         final String password,
         final String schemaName,
-        final Collation setCollation
+        final Collation collation
     ) throws SQLException
     {
-        logReceivedArgumentsIfDebug(dbHost, dbPort, dbName, username, secretKeys, schemaName, setCollation);
+        logReceivedArgumentsIfDebug(dbHost, dbPort, dbName, username, secretKeys, schemaName, collation);
 
         LOGGER.info("Checking connection ...");
 
@@ -93,7 +93,7 @@ public final class Migrator
         try (final Connection connection = dbSource.getConnection()) {
             if (!doesDbExist(connection, dbName)) {
                 LOGGER.debug("reset or createDB");
-                createDatabase(connection, dbName, setCollation);
+                createDatabase(connection, dbName, collation);
             }
         }
         LOGGER.info("Connection Ok. Starting migration ...");
@@ -128,24 +128,24 @@ public final class Migrator
         }
     }
 
-    private static String getCreateDbQuery(final Connection connection, final String dbName, final Collation setCollation) throws SQLException
+    private static String getCreateDbQuery(final Connection connection, final String dbName, final Collation collation) throws SQLException
     {
-        final String queryTemplate = setCollation != null
+        final String queryTemplate = collation != null
             ? CREATE_DATABASE_BASE + " " + WITH_COLLATION
             : CREATE_DATABASE_BASE;
-        if (setCollation != null) {
-            LOGGER.debug("Creating DB with collation: {}", setCollation.value());
+        if (collation != null) {
+            LOGGER.debug("Creating DB with collation: {}", collation.value());
         } else {
             LOGGER.debug("Creating DB with default collation.");
         }
         final String formattedQuery = "SELECT format($fmt$" + queryTemplate + "$fmt$, "
-            + (setCollation != null ? "?, ?, ?" : "?") + ")";
+            + (collation != null ? "?, ?, ?" : "?") + ")";
         LOGGER.info("Create DB Query: {}", formattedQuery);
         try (final PreparedStatement getCreateDbQueryStatement = connection.prepareStatement(formattedQuery)) {
             getCreateDbQueryStatement.setString(1, dbName);
-            if(setCollation != null) {
-                getCreateDbQueryStatement.setString(2, setCollation.value());
-                getCreateDbQueryStatement.setString(3, setCollation.value());
+            if(collation != null) {
+                getCreateDbQueryStatement.setString(2, collation.value());
+                getCreateDbQueryStatement.setString(3, collation.value());
             }
             final ResultSet set = getCreateDbQueryStatement.executeQuery();
             set.next();
@@ -173,7 +173,7 @@ public final class Migrator
         final String username,
         final List<String> secretKeys,
         final String schema,
-        final Collation setCollation
+        final Collation collation
     )
     {
         LOGGER.debug("Arguments received"
@@ -183,7 +183,7 @@ public final class Migrator
             + " username: {}"
             + " secretKeys: {}"
             + " schema: {}"
-            + " setCollation: {}",
-            dbHost, dbPort, dbName, username, secretKeys, schema, setCollation != null ? setCollation.value() : null);
+            + " collation: {}",
+            dbHost, dbPort, dbName, username, secretKeys, schema, collation != null ? collation.value() : null);
     }
 }
