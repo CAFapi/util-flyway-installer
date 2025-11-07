@@ -33,7 +33,24 @@ public final class Migrator
     private static final String CREATE_DATABASE_BASE = "CREATE DATABASE %I";
     private static final String DOES_DATABASE_EXIST
         = "SELECT EXISTS (SELECT NULL FROM pg_catalog.pg_database WHERE lower( datname ) = lower( ? ));";
-    private static final String WITH_C_COLLATION = "WITH TEMPLATE template0 LC_COLLATE = 'C' LC_CTYPE = 'C'";
+    private static final String WITH_COLLATION = "WITH TEMPLATE template0 LC_COLLATE = %I LC_CTYPE = %I";
+
+    public enum Collation {
+
+        C("C"),
+        EN_US_UTF8("en_US.UTF-8");
+
+        private final String value;
+        Collation(final String value)
+        {
+            this.value = value;
+        }
+
+        public String value() {
+            return value;
+        }
+
+    }
 
     private Migrator()
     {
@@ -49,7 +66,7 @@ public final class Migrator
         final String password
     ) throws SQLException
     {
-        migrate(dbHost, dbPort, dbName, username, secretKeys, password, null, false);
+        migrate(dbHost, dbPort, dbName, username, secretKeys, password, null, null);
     }
 
     public static void migrate(
@@ -60,7 +77,7 @@ public final class Migrator
         final List<String> secretKeys,
         final String password,
         final String schemaName,
-        final boolean setCollation
+        final Collation setCollation
     ) throws SQLException
     {
         logReceivedArgumentsIfDebug(dbHost, dbPort, dbName, username, secretKeys, schemaName, setCollation);
@@ -100,7 +117,7 @@ public final class Migrator
     private static void createDatabase(
         final Connection connection,
         final String dbName,
-        final boolean setCollation
+        final Collation setCollation
     ) throws SQLException
     {
         final String createDbQuery = getCreateDbQuery(connection, dbName, setCollation);
@@ -111,12 +128,25 @@ public final class Migrator
         }
     }
 
-    private static String getCreateDbQuery(final Connection connection, final String dbName, final boolean setCollation) throws SQLException
+    private static String getCreateDbQuery(final Connection connection, final String dbName, final Collation setCollation) throws SQLException
     {
-        final String query = setCollation ? CREATE_DATABASE_BASE + " " + WITH_C_COLLATION : CREATE_DATABASE_BASE;
-        final String createDatabaseQuery = "SELECT format($fmt$" + query + "$fmt$, ?)";
-        try (final PreparedStatement getCreateDbQueryStatement = connection.prepareStatement(createDatabaseQuery)) {
+        final String queryTemplate = setCollation != null
+            ? CREATE_DATABASE_BASE + " " + WITH_COLLATION
+            : CREATE_DATABASE_BASE;
+        if (setCollation != null) {
+            LOGGER.debug("Creating DB with collation: {}", setCollation.value());
+        } else {
+            LOGGER.debug("Creating DB with default collation.");
+        }
+        final String formattedQuery = "SELECT format($fmt$" + queryTemplate + "$fmt$, "
+            + (setCollation != null ? "?, ?, ?" : "?") + ")";
+        LOGGER.info("Create DB Query: {}", formattedQuery);
+        try (final PreparedStatement getCreateDbQueryStatement = connection.prepareStatement(formattedQuery)) {
             getCreateDbQueryStatement.setString(1, dbName);
+            if(setCollation != null) {
+                getCreateDbQueryStatement.setString(2, setCollation.value());
+                getCreateDbQueryStatement.setString(3, setCollation.value());
+            }
             final ResultSet set = getCreateDbQueryStatement.executeQuery();
             set.next();
             return set.getString(1);
@@ -143,7 +173,7 @@ public final class Migrator
         final String username,
         final List<String> secretKeys,
         final String schema,
-        final boolean setCollation
+        final Collation setCollation
     )
     {
         LOGGER.debug("Arguments received"
@@ -153,6 +183,7 @@ public final class Migrator
             + " username: {}"
             + " secretKeys: {}"
             + " schema: {}"
-            + " setCollation: {}", dbHost, dbPort, dbName, username, secretKeys, schema, setCollation);
+            + " setCollation: {}",
+            dbHost, dbPort, dbName, username, secretKeys, schema, setCollation != null ? setCollation.value() : null);
     }
 }

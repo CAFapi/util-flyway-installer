@@ -105,10 +105,9 @@ public final class Application implements Callable<Integer>
     @CommandLine.Option(
         names = {"-db.setCollation"},
         paramLabel = "<setCollation>",
-        defaultValue = "false",
-        description = "Set C Collation for the database."
+        description = "Set desired collation type to the database while creation. Possible values are : 'C' and 'EN_US_UTF8'"
     )
-    private boolean setCollation;
+    private String setCollation;
 
     public static void main(final String[] args)
     {
@@ -124,7 +123,8 @@ public final class Application implements Callable<Integer>
         }
 
         try {
-            Migrator.migrate(dbHost, dbPort, dbName, username, secretKeys, getFirstNonEmptySecret(secretKeys), schema, setCollation);
+            Migrator.migrate(dbHost, dbPort, dbName, username, secretKeys, getFirstNonEmptySecret(secretKeys), schema,
+                Migrator.Collation.valueOf(setCollation));
         } catch (final SQLException | RuntimeException | IOException ex) {
             LOGGER.error("Issue while migrating.", ex);
             return 1;
