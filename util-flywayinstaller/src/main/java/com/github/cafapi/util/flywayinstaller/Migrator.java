@@ -30,26 +30,25 @@ import org.slf4j.LoggerFactory;
 public final class Migrator
 {
     private static final Logger LOGGER = LoggerFactory.getLogger(Migrator.class);
-    private static final String CREATE_DATABASE_BASE = "CREATE DATABASE %I";
     private static final String DOES_DATABASE_EXIST
         = "SELECT EXISTS (SELECT NULL FROM pg_catalog.pg_database WHERE lower( datname ) = lower( ? ));";
-    private static final String WITH_COLLATION = "WITH TEMPLATE template0 LC_COLLATE = %I LC_CTYPE = %I";
 
-    public enum Collation {
-
+    public enum Collation
+    {
         C("C"),
         UTF_8("en_US.UTF-8");
 
         private final String value;
+
         Collation(final String value)
         {
             this.value = value;
         }
 
-        public String value() {
+        String value()
+        {
             return value;
         }
-
     }
 
     private Migrator()
@@ -117,10 +116,10 @@ public final class Migrator
     private static void createDatabase(
         final Connection connection,
         final String dbName,
-        final Collation setCollation
+        final Collation collation
     ) throws SQLException
     {
-        final String createDbQuery = getCreateDbQuery(connection, dbName, setCollation);
+        final String createDbQuery = getCreateDbQuery(connection, dbName, collation);
 
         try (final Statement createDbStatement = connection.createStatement()) {
             createDbStatement.executeUpdate(createDbQuery);
@@ -128,22 +127,28 @@ public final class Migrator
         }
     }
 
-    private static String getCreateDbQuery(final Connection connection, final String dbName, final Collation collation) throws SQLException
+    private static String getCreateDbQuery(
+        final Connection connection,
+        final String dbName,
+        final Collation collation
+    ) throws SQLException
     {
-        final String queryTemplate = collation != null
-            ? CREATE_DATABASE_BASE + " " + WITH_COLLATION
-            : CREATE_DATABASE_BASE;
+        final String sql;
         if (collation != null) {
             LOGGER.debug("Creating DB with collation: {}", collation.value());
+            sql = "SELECT format($fmt$"
+                + "CREATE DATABASE %I WITH TEMPLATE template0 LC_COLLATE = %I LC_CTYPE = %I"
+                + "$fmt$, ?, ?, ?)";
         } else {
             LOGGER.debug("Creating DB with default collation.");
+            sql = "SELECT format($fmt$"
+                + "CREATE DATABASE %I"
+                + "$fmt$, ?)";
         }
-        final String formattedQuery = "SELECT format($fmt$" + queryTemplate + "$fmt$, "
-            + (collation != null ? "?, ?, ?" : "?") + ")";
-        LOGGER.info("Create DB Query: {}", formattedQuery);
-        try (final PreparedStatement getCreateDbQueryStatement = connection.prepareStatement(formattedQuery)) {
+        LOGGER.debug("Create DB Query: {}", sql);
+        try (final PreparedStatement getCreateDbQueryStatement = connection.prepareStatement(sql)) {
             getCreateDbQueryStatement.setString(1, dbName);
-            if(collation != null) {
+            if (collation != null) {
                 getCreateDbQueryStatement.setString(2, collation.value());
                 getCreateDbQueryStatement.setString(3, collation.value());
             }
@@ -183,7 +188,6 @@ public final class Migrator
             + " username: {}"
             + " secretKeys: {}"
             + " schema: {}"
-            + " collation: {}",
-            dbHost, dbPort, dbName, username, secretKeys, schema, collation != null ? collation.value() : null);
+            + " collation: {}", dbHost, dbPort, dbName, username, secretKeys, schema, collation);
     }
 }
