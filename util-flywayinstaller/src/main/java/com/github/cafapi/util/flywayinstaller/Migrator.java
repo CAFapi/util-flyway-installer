@@ -30,9 +30,26 @@ import org.slf4j.LoggerFactory;
 public final class Migrator
 {
     private static final Logger LOGGER = LoggerFactory.getLogger(Migrator.class);
-    private static final String CREATE_DATABASE = "SELECT format('CREATE DATABASE %I', ?)";
     private static final String DOES_DATABASE_EXIST
         = "SELECT EXISTS (SELECT NULL FROM pg_catalog.pg_database WHERE lower( datname ) = lower( ? ));";
+
+    public enum Collation
+    {
+        C("C"),
+        UTF_8("en_US.UTF-8");
+
+        private final String value;
+
+        Collation(final String value)
+        {
+            this.value = value;
+        }
+
+        String value()
+        {
+            return value;
+        }
+    }
 
     private Migrator()
     {
@@ -48,7 +65,7 @@ public final class Migrator
         final String password
     ) throws SQLException
     {
-        migrate(dbHost, dbPort, dbName, username, secretKeys, password, null);
+        migrate(dbHost, dbPort, dbName, username, secretKeys, password, null, null);
     }
 
     public static void migrate(
@@ -58,10 +75,11 @@ public final class Migrator
         final String username,
         final List<String> secretKeys,
         final String password,
-        final String schemaName
+        final String schemaName,
+        final Collation collation
     ) throws SQLException
     {
-        logReceivedArgumentsIfDebug(dbHost, dbPort, dbName, username, secretKeys, schemaName);
+        logReceivedArgumentsIfDebug(dbHost, dbPort, dbName, username, secretKeys, schemaName, collation);
 
         LOGGER.info("Checking connection ...");
 
@@ -74,7 +92,7 @@ public final class Migrator
         try (final Connection connection = dbSource.getConnection()) {
             if (!doesDbExist(connection, dbName)) {
                 LOGGER.debug("reset or createDB");
-                createDatabase(connection, dbName);
+                createDatabase(connection, dbName, collation);
             }
         }
         LOGGER.info("Connection Ok. Starting migration ...");
@@ -97,10 +115,11 @@ public final class Migrator
 
     private static void createDatabase(
         final Connection connection,
-        final String dbName
+        final String dbName,
+        final Collation collation
     ) throws SQLException
     {
-        final String createDbQuery = getCreateDbQuery(connection, dbName);
+        final String createDbQuery = getCreateDbQuery(connection, dbName, collation);
 
         try (final Statement createDbStatement = connection.createStatement()) {
             createDbStatement.executeUpdate(createDbQuery);
@@ -108,10 +127,31 @@ public final class Migrator
         }
     }
 
-    private static String getCreateDbQuery(final Connection connection, final String dbName) throws SQLException
+    private static String getCreateDbQuery(
+        final Connection connection,
+        final String dbName,
+        final Collation collation
+    ) throws SQLException
     {
-        try (final PreparedStatement getCreateDbQueryStatement = connection.prepareStatement(CREATE_DATABASE)) {
+        final String sql;
+        if (collation != null) {
+            LOGGER.debug("Creating DB with collation: {}", collation.value());
+            sql = "SELECT format($fmt$"
+                + "CREATE DATABASE %I WITH TEMPLATE template0 LC_COLLATE = %I LC_CTYPE = %I"
+                + "$fmt$, ?, ?, ?)";
+        } else {
+            LOGGER.debug("Creating DB with default collation.");
+            sql = "SELECT format($fmt$"
+                + "CREATE DATABASE %I"
+                + "$fmt$, ?)";
+        }
+        LOGGER.debug("Create DB Query: {}", sql);
+        try (final PreparedStatement getCreateDbQueryStatement = connection.prepareStatement(sql)) {
             getCreateDbQueryStatement.setString(1, dbName);
+            if (collation != null) {
+                getCreateDbQueryStatement.setString(2, collation.value());
+                getCreateDbQueryStatement.setString(3, collation.value());
+            }
             final ResultSet set = getCreateDbQueryStatement.executeQuery();
             set.next();
             return set.getString(1);
@@ -137,7 +177,8 @@ public final class Migrator
         final String dbName,
         final String username,
         final List<String> secretKeys,
-        final String schema
+        final String schema,
+        final Collation collation
     )
     {
         LOGGER.debug("Arguments received"
@@ -146,6 +187,7 @@ public final class Migrator
             + " dbName: {}"
             + " username: {}"
             + " secretKeys: {}"
-            + " schema: {}", dbHost, dbPort, dbName, username, secretKeys, schema);
+            + " schema: {}"
+            + " collation: {}", dbHost, dbPort, dbName, username, secretKeys, schema, collation);
     }
 }
