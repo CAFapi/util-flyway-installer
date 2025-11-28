@@ -89,6 +89,14 @@ public final class Application implements Callable<Integer>
     private String dbName;
 
     @CommandLine.Option(
+        names = {"-db.adminDbName"},
+        paramLabel = "<adminDbName>",
+        required = false,
+        description = "Specifies the admin database used to connect for existence checks and creation. Defaults to 'postgres' if not provided."
+    )
+    private String adminDbName;
+
+    @CommandLine.Option(
         names = {"-log"},
         paramLabel = "<logLevel>",
         description = "Specifies the logging level of the installer. Can be DEBUG, INFO, WARNING, ERROR or OFF. Must be Uppercase"
@@ -123,8 +131,17 @@ public final class Application implements Callable<Integer>
         }
 
         try {
-            Migrator.migrate(dbHost, dbPort, dbName, username, secretKeys, getFirstNonEmptySecret(secretKeys), schema,
-                             collation != null ? Migrator.Collation.valueOf(collation) : null);
+            Migrator.migrate(
+                    dbHost,
+                    dbPort,
+                    dbName,
+                    username,
+                    secretKeys,
+                    getFirstNonEmptySecret(secretKeys),
+                    schema,
+                    collation != null ? Migrator.Collation.valueOf(collation) : null,
+                    adminDbName
+            );
         } catch (final SQLException | RuntimeException | IOException ex) {
             LOGGER.error("Issue while migrating.", ex);
             return 1;
