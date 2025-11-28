@@ -4,7 +4,7 @@
 ${version-number}
 
 #### Breaking Changes
-- D1058125: The admin database used to connect for existence check and creation now defaults to 'postgres' if not supplied.  
+- D1058125: The admin database used to connect for existence check and creation now defaults to 'postgres' if not supplied via the `adminDbName` parameter.  
 Previously it defaulted to a database with the same name as the user name used to connect to the server.
 
 #### New Features
