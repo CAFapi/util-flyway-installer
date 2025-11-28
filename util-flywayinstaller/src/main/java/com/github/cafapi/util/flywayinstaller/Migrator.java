@@ -65,7 +65,7 @@ public final class Migrator
         final String password
     ) throws SQLException
     {
-        migrate(dbHost, dbPort, dbName, username, secretKeys, password, null, null, null);
+        migrate(dbHost, dbPort, dbName, username, secretKeys, password, null, null, null, null);
     }
 
     @Deprecated
@@ -80,7 +80,7 @@ public final class Migrator
         final Collation collation
     ) throws SQLException
     {
-        migrate(dbHost, dbPort, dbName, username, secretKeys, password, schemaName, collation, null);
+        migrate(dbHost, dbPort, dbName, username, secretKeys, password, schemaName, collation, null, null);
     }
 
     public static void migrate(
@@ -92,10 +92,11 @@ public final class Migrator
         final String password,
         final String schemaName,
         final Collation collation,
-        final String adminDbName
+        final String adminDbName,
+        final String tablespace
     ) throws SQLException
     {
-        logReceivedArgumentsIfDebug(dbHost, dbPort, dbName, username, secretKeys, schemaName, collation, adminDbName);
+        logReceivedArgumentsIfDebug(dbHost, dbPort, dbName, username, secretKeys, schemaName, collation, adminDbName, tablespace);
 
         LOGGER.info("Checking connection ...");
 
@@ -112,7 +113,7 @@ public final class Migrator
         try (final Connection connection = dbSource.getConnection()) {
             if (!doesDbExist(connection, dbName)) {
                 LOGGER.debug("reset or createDB");
-                createDatabase(connection, dbName, collation);
+                createDatabase(connection, dbName, tablespace, collation);
             }
         }
         LOGGER.info("Connection Ok. Starting migration ...");
@@ -136,10 +137,11 @@ public final class Migrator
     private static void createDatabase(
         final Connection connection,
         final String dbName,
+        final String tablespace,
         final Collation collation
     ) throws SQLException
     {
-        final String createDbQuery = getCreateDbQuery(connection, dbName, collation);
+        final String createDbQuery = getCreateDbQuery(connection, dbName, tablespace, collation);
 
         try (final Statement createDbStatement = connection.createStatement()) {
             createDbStatement.executeUpdate(createDbQuery);
@@ -150,19 +152,23 @@ public final class Migrator
     private static String getCreateDbQuery(
         final Connection connection,
         final String dbName,
+        final String tablespace,
         final Collation collation
     ) throws SQLException
     {
         final String sql;
+        
+        final String tablespaceClause = (tablespace != null && !tablespace.isBlank()) ? " TABLESPACE " + tablespace : "";
+
         if (collation != null) {
             LOGGER.debug("Creating DB with collation: {}", collation.value());
             sql = "SELECT format($fmt$"
-                + "CREATE DATABASE %I WITH TEMPLATE template0 LC_COLLATE = %I LC_CTYPE = %I"
+                + "CREATE DATABASE %I WITH TEMPLATE template0 LC_COLLATE = %I LC_CTYPE = %I" + tablespaceClause
                 + "$fmt$, ?, ?, ?)";
         } else {
             LOGGER.debug("Creating DB with default collation.");
             sql = "SELECT format($fmt$"
-                + "CREATE DATABASE %I"
+                + "CREATE DATABASE %I" + tablespaceClause
                 + "$fmt$, ?)";
         }
         LOGGER.debug("Create DB Query: {}", sql);
@@ -199,17 +205,19 @@ public final class Migrator
         final List<String> secretKeys,
         final String schema,
         final Collation collation,
-        final String adminDbName
+        final String adminDbName,
+        final String tablespace
     )
     {
         LOGGER.debug("Arguments received"
             + " dbHost: {}"
             + " dbPort: {}"
+            + " tablespace: {}"
             + " dbName: {}"
             + " username: {}"
             + " secretKeys: {}"
             + " schema: {}"
             + " collation: {}"
-            + " adminDbName: {}", dbHost, dbPort, dbName, username, secretKeys, schema, collation, adminDbName);
+            + " adminDbName: {}", dbHost, dbPort, tablespace, dbName, username, secretKeys, schema, collation, adminDbName);
     }
 }

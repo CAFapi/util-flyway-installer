@@ -10,6 +10,8 @@ Previously it defaulted to a database with the same name as the user name used t
 #### New Features
 - D1058125: Add optional `adminDbName` parameter.  
 The value of this is the name of the admin database which is used for the initial database connection for existence checks and creation. Defaults to 'postgres' if not provided.
+- US1059166: Add optional `tablespace` parameter.  
+The value of this is the name of the tablespace to create the database in. If not provided, the default tablespace is used.
 
 #### Known Issues
 - None
