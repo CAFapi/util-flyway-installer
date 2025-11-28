@@ -65,9 +65,10 @@ public final class Migrator
         final String password
     ) throws SQLException
     {
-        migrate(dbHost, dbPort, dbName, username, secretKeys, password, null, null);
+        migrate(dbHost, dbPort, dbName, username, secretKeys, password, null, null, null);
     }
 
+    @Deprecated
     public static void migrate(
         final String dbHost,
         final int dbPort,
@@ -79,7 +80,22 @@ public final class Migrator
         final Collation collation
     ) throws SQLException
     {
-        logReceivedArgumentsIfDebug(dbHost, dbPort, dbName, username, secretKeys, schemaName, collation);
+        migrate(dbHost, dbPort, dbName, username, secretKeys, password, schemaName, collation, null);
+    }
+
+    public static void migrate(
+        final String dbHost,
+        final int dbPort,
+        final String dbName,
+        final String username,
+        final List<String> secretKeys,
+        final String password,
+        final String schemaName,
+        final Collation collation,
+        final String adminDbName
+    ) throws SQLException
+    {
+        logReceivedArgumentsIfDebug(dbHost, dbPort, dbName, username, secretKeys, schemaName, collation, adminDbName);
 
         LOGGER.info("Checking connection ...");
 
@@ -88,6 +104,10 @@ public final class Migrator
         dbSource.setPortNumbers(new int[]{dbPort});
         dbSource.setUser(username);
         dbSource.setPassword(password);
+
+        // Use configurable admin database (defaults to postgres) for initial connection
+        final String effectiveAdminDb = (adminDbName == null || adminDbName.isBlank()) ? "postgres" : adminDbName;
+        dbSource.setDatabaseName(effectiveAdminDb);
 
         try (final Connection connection = dbSource.getConnection()) {
             if (!doesDbExist(connection, dbName)) {
@@ -178,7 +198,8 @@ public final class Migrator
         final String username,
         final List<String> secretKeys,
         final String schema,
-        final Collation collation
+        final Collation collation,
+        final String adminDbName
     )
     {
         LOGGER.debug("Arguments received"
@@ -188,6 +209,7 @@ public final class Migrator
             + " username: {}"
             + " secretKeys: {}"
             + " schema: {}"
-            + " collation: {}", dbHost, dbPort, dbName, username, secretKeys, schema, collation);
+            + " collation: {}"
+            + " adminDbName: {}", dbHost, dbPort, dbName, username, secretKeys, schema, collation, adminDbName);
     }
 }

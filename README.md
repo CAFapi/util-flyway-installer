@@ -11,6 +11,7 @@ The following arguments can be specified:
 *   `db.host`        : Specifies the host name.  e.g. localhost
 *   `db.port`        : Specifies the server port.  e.g. 5432
 *   `db.user`        : Specifies the username to access the database.
+*   `db.adminDbName` : (Optional) Specifies the admin database used to connect for existence checks and creation. Defaults to 'postgres' if not provided.
 *   `db.secretKeys`  : Specifies the secret keys used to access the database, separated by commas. The first non-empty secret value found for any of these keys will be used.
 *   `db.name`        : Specifies the name of the database to be created or updated.
 *   `db.schema`      : (Optional) Specifies the database schema to be used. If not specified, the default schema for the database will be used.
