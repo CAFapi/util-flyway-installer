@@ -68,6 +68,7 @@ public final class Migrator
         migrate(dbHost, dbPort, dbName, username, secretKeys, password, null, null, null);
     }
 
+    @Deprecated
     public static void migrate(
         final String dbHost,
         final int dbPort,
@@ -104,7 +105,7 @@ public final class Migrator
         dbSource.setUser(username);
         dbSource.setPassword(password);
 
-        // Use configurable admin database (defaults to postgres) for initial connection.
+        // Use configurable admin database (defaults to postgres) for initial connection
         final String effectiveAdminDb = (adminDbName == null || adminDbName.isBlank()) ? "postgres" : adminDbName;
         dbSource.setDatabaseName(effectiveAdminDb);
 
