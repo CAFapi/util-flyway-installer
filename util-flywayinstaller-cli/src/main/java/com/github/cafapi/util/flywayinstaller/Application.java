@@ -117,6 +117,13 @@ public final class Application implements Callable<Integer>
     )
     private String collation;
 
+    @CommandLine.Option(
+        names = {"-db.tablespace"},
+        paramLabel = "<tablespace>",
+        description = "Specifies the tablespace to use when creating the database, if applicable. If not provided, the default tablespace will be used."
+    )
+    private String tablespace;
+
     public static void main(final String[] args)
     {
         final int exitCode = new CommandLine(new Application()).execute(args);
@@ -140,7 +147,8 @@ public final class Application implements Callable<Integer>
                     getFirstNonEmptySecret(secretKeys),
                     schema,
                     collation != null ? Migrator.Collation.valueOf(collation) : null,
-                    adminDbName
+                    adminDbName,
+                    tablespace
             );
         } catch (final SQLException | RuntimeException | IOException ex) {
             LOGGER.error("Issue while migrating.", ex);

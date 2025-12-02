@@ -17,6 +17,7 @@ The following arguments can be specified:
 *   `db.schema`      : (Optional) Specifies the database schema to be used. If not specified, the default schema for the database will be used.
 *   `db.collation`   : (Optional) Specifies the collation setting when creating the database. Valid options are: [`C`, `UTF_8`]. If not specified, the database default collation will be used.
 *   `log`            : Specifies the logging level of the installer. Valid options are: [DEBUG, INFO, WARNING, ERROR, OFF]
+*   `db.tablespace`  : (Optional) Specifies the tablespace to use when creating the database, if applicable. If not specified, the default tablespace will be used.
 
 The command to run the jar will be in the following format, where the migration files are in `db/migration`:
 
