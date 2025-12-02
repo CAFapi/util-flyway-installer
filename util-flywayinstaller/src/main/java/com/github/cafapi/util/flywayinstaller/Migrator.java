@@ -157,7 +157,6 @@ public final class Migrator
     ) throws SQLException
     {
         final String sql;
-        
         final String tablespaceClause = (tablespace != null && !tablespace.isBlank()) ? " TABLESPACE " + tablespace : "";
 
         if (collation != null) {
